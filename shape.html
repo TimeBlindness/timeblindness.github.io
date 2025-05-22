@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Binary Shape Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .preview-panel {
+            flex: 2;
+            min-width: 400px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .canvas-container {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .gallery-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            width: calc(33% - 10px);
+            text-align: center;
+            background-color: white;
+        }
+        .gallery-item img {
+            max-width: 100%;
+            border: 1px solid #eee;
+        }
+        .gallery-item button {
+            margin-top: 5px;
+            background-color: #2196F3;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .gallery-item button:hover {
+            background-color: #0b7dda;
+        }
+        .subform {
+            margin-left: 15px;
+            padding-left: 10px;
+            border-left: 2px solid #eee;
+        }
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+        .color-picker {
+            display: flex;
+            gap: 10px;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.selected {
+            border-color: #333;
+        }
+        .canvas-size {
+            display: flex;
+            gap: 10px;
+        }
+        .canvas-size input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Binary Shape Generator</h1>
+    
+    <div class="container">
+        <div class="control-panel">
+            <div class="form-group">
+                <label for="shapeType">Choose a Shape:</label>
+                <select id="shapeType">
+                    <option value="heart">Heart</option>
+                    <option value="circle">Circle</option>
+                    <option value="square">Square</option>
+                    <option value="triangle">Triangle</option>
+                    <option value="rectangle">Rectangle</option>
+                    <option value="oval">Oval</option>
+                    <option value="star">Star</option>
+                    <option value="diamond">Diamond</option>
+                    <option value="cross">Cross</option>
+                    <option value="plus">Plus Sign</option>
+                    <option value="arrow">Arrow</option>
+                    <option value="house">House</option>
+                    <option value="tree">Tree</option>
+                    <option value="cloud">Cloud</option>
+                    <option value="moon">Crescent Moon</option>
+                    <option value="lightning">Lightning Bolt</option>
+                    <option value="drop">Water Drop</option>
+                    <option value="flower">Simple Flower</option>
+                    <option value="smiley">Smiley Face</option>
+                    <option value="hexagon">Hexagon</option>
+                    <option disabled>--- 3D Shapes ---</option>
+                    <option value="cube">Cube</option>
+                    <option value="pyramid">Pyramid</option>
+                    <option value="cylinder">Cylinder</option>
+                    <option value="cone">Cone</option>
+                    <option value="sphere3d">Sphere (3D)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="shapeSize">Size (%):</label>
+                <input type="range" id="shapeSize" min="10" max="95" value="70">
+            </div>
+            
+            <div class="form-group">
+                <label for="rotation">Rotation (degrees):</label>
+                <input type="range" id="rotation" min="0" max="360" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label>Canvas Size:</label>
+                <div class="canvas-size">
+                    <input type="number" id="canvasWidth" min="50" max="1000" value="400">
+                    <span>×</span>
+                    <input type="number" id="canvasHeight" min="50" max="1000" value="400">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Shape Color:</label>
+                <div class="color-picker">
+                    <div class="color-option selected" style="background-color: black;" data-color="black"></div>
+                    <div class="color-option" style="background-color: white;" data-color="white"></div>
+                    <div class="color-option" style="background-color: red;" data-color="red"></div>
+                    <div class="color-option" style="background-color: blue;" data-color="blue"></div>
+                    <div class="color-option" style="background-color: green;" data-color="green"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Background Color:</label>
+                <div class="color-picker" id="bgColorPicker">
+                    <div class="color-option" style="background-color: black;" data-color="black"></div>
+                    <div class="color-option selected" style="background-color: white;" data-color="white"></div>
+                    <div class="color-option" style="background-color: red;" data-color="red"></div>
+                    <div class="color-option" style="background-color: blue;" data-color="blue"></div>
+                    <div class="color-option" style="background-color: green;" data-color="green"></div>
+                </div>
+            </div>
+            
+            <!-- Shape-specific options -->
+            <div id="starOptions" class="shape-options" style="display: none;">
+                <div class="form-group">
+                    <label for="starPoints">Number of Points:</label>
+                    <input type="range" id="starPoints" min="3" max="10" value="5">
+                    <span id="starPointsValue">5</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Export Options:</label>
+                <div>
+                    <input type="checkbox" id="aliasedEdges" checked>
+                    <label for="aliasedEdges">Anti-aliased edges (smooth)</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="strictBinary">
+                    <label for="strictBinary">Strict binary mask (hard edges, true 0/1 values)</label>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="form-group">
+                <label for="fileName">File Name:</label>
+                <input type="text" id="fileName" value="shape">
+            </div>
+            
+            <button id="generateBtn">Generate Shape</button>
+            <button id="downloadBtn">Download PNG</button>
+            <button id="addGalleryBtn">Add to Gallery</button>
+            <button id="clearGalleryBtn">Clear Gallery</button>
+        </div>
+        
+        <div class="preview-panel">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="shapeCanvas" width="400" height="400"></canvas>
+            </div>
+            
+            <h3>Gallery</h3>
+            <div class="gallery" id="gallery"></div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const shapeTypeSelect = document.getElementById('shapeType');
+        const shapeSizeInput = document.getElementById('shapeSize');
+        const rotationInput = document.getElementById('rotation');
+        const canvasWidthInput = document.getElementById('canvasWidth');
+        const canvasHeightInput = document.getElementById('canvasHeight');
+        const fileNameInput = document.getElementById('fileName');
+        const starPointsInput = document.getElementById('starPoints');
+        const starPointsValue = document.getElementById('starPointsValue');
+        const aliasedEdgesCheckbox = document.getElementById('aliasedEdges');
+        const strictBinaryCheckbox = document.getElementById('strictBinary');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const addGalleryBtn = document.getElementById('addGalleryBtn');
+        const clearGalleryBtn = document.getElementById('clearGalleryBtn');
+        const canvas = document.getElementById('shapeCanvas');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const gallery = document.getElementById('gallery');
+        const ctx = canvas.getContext('2d');
+        
+        // Variables
+        let currentColor = 'black';
+        let currentBackgroundColor = 'white';
+        
+        // Initialize
+        function init() {
+            updateShapeOptions();
+            generateShape();
+            
+            // Event listeners
+            shapeTypeSelect.addEventListener('change', updateShapeOptions);
+            generateBtn.addEventListener('click', generateShape);
+            downloadBtn.addEventListener('click', downloadShape);
+            addGalleryBtn.addEventListener('click', addToGallery);
+            clearGalleryBtn.addEventListener('click', clearGallery);
+            
+            canvasWidthInput.addEventListener('change', updateCanvasSize);
+            canvasHeightInput.addEventListener('change', updateCanvasSize);
+            
+            // Checkbox behaviors
+            strictBinaryCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    aliasedEdgesCheckbox.checked = false;
+                    ctx.imageSmoothingEnabled = false;
+                    generateShape();
+                } else {
+                    ctx.imageSmoothingEnabled = true;
+                }
+            });
+            
+            aliasedEdgesCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    strictBinaryCheckbox.checked = false;
+                    ctx.imageSmoothingEnabled = true;
+                }
+                generateShape();
+            });
+            
+            // Shape color picker
+            document.querySelectorAll('.color-option').forEach(option => {
+                if (!option.parentElement.id.includes('bg')) {
+                    option.addEventListener('click', function() {
+                        document.querySelector('.color-picker:not(#bgColorPicker) .color-option.selected').classList.remove('selected');
+                        this.classList.add('selected');
+                        currentColor = this.getAttribute('data-color');
+                        generateShape();
+                    });
+                }
+            });
+            
+            // Background color picker
+            document.querySelectorAll('#bgColorPicker .color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelector('#bgColorPicker .color-option.selected').classList.remove('selected');
+                    this.classList.add('selected');
+                    currentBackgroundColor = this.getAttribute('data-color');
+                    generateShape();
+                });
+            });
+            
+            // Shape-specific options
+            starPointsInput.addEventListener('input', function() {
+                starPointsValue.textContent = this.value;
+                generateShape();
+            });
+            shapeSizeInput.addEventListener('input', generateShape);
+            rotationInput.addEventListener('input', generateShape);
+        }
+        
+        // Update shape options based on selected shape
+        function updateShapeOptions() {
+            document.querySelectorAll('.shape-options').forEach(el => el.style.display = 'none');
+            
+            const shapeType = shapeTypeSelect.value;
+            if (shapeType === 'star') {
+                document.getElementById('starOptions').style.display = 'block';
+            }
+            
+            generateShape();
+        }
+        
+        // Update canvas size
+        function updateCanvasSize() {
+            const width = parseInt(canvasWidthInput.value);
+            const height = parseInt(canvasHeightInput.value);
+            
+            if (width && height) {
+                canvas.width = width;
+                canvas.height = height;
+                canvasContainer.style.width = width + "px";
+                canvasContainer.style.height = height + "px";
+                generateShape();
+            }
+        }
+        
+        // Generate shape on canvas
+        function generateShape() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const size = shapeSizeInput.value / 100;
+            const rotation = parseInt(rotationInput.value) * Math.PI / 180;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const maxRadius = Math.min(width, height) / 2 * size;
+            
+            // Set image smoothing based on checkbox
+            ctx.imageSmoothingEnabled = !strictBinaryCheckbox.checked;
+            
+            // Clear canvas
+            ctx.fillStyle = currentBackgroundColor;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw shape
+            ctx.fillStyle = currentColor;
+            
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(rotation);
+            
+            const shapeType = shapeTypeSelect.value;
+            
+            switch(shapeType) {
+                case 'heart':
+                    drawHeart(maxRadius);
+                    break;
+                case 'star':
+                    drawStar(maxRadius);
+                    break;
+                case 'circle':
+                    drawCircle(maxRadius);
+                    break;
+                case 'square':
+                    drawSquare(maxRadius);
+                    break;
+                case 'triangle':
+                    drawTriangle(maxRadius);
+                    break;
+                case 'rectangle':
+                    drawRectangle(maxRadius);
+                    break;
+                case 'oval':
+                    drawOval(maxRadius);
+                    break;
+                case 'diamond':
+                    drawDiamond(maxRadius);
+                    break;
+                case 'cross':
+                    drawCross(maxRadius);
+                    break;
+                case 'plus':
+                    drawPlus(maxRadius);
+                    break;
+                case 'arrow':
+                    drawArrow(maxRadius);
+                    break;
+                case 'house':
+                    drawHouse(maxRadius);
+                    break;
+                case 'tree':
+                    drawTree(maxRadius);
+                    break;
+                case 'cloud':
+                    drawCloud(maxRadius);
+                    break;
+                case 'moon':
+                    drawMoon(maxRadius);
+                    break;
+                case 'lightning':
+                    drawLightning(maxRadius);
+                    break;
+                case 'drop':
+                    drawDrop(maxRadius);
+                    break;
+                case 'flower':
+                    drawFlower(maxRadius);
+                    break;
+                case 'smiley':
+                    drawSmiley(maxRadius);
+                    break;
+                case 'hexagon':
+                    drawPolygon(maxRadius, 6);
+                    break;
+                case 'cube':
+                    drawCube(maxRadius);
+                    break;
+                case 'pyramid':
+                    drawPyramid(maxRadius);
+                    break;
+                case 'cylinder':
+                    drawCylinder(maxRadius);
+                    break;
+                case 'cone':
+                    drawCone(maxRadius);
+                    break;
+                case 'sphere3d':
+                    drawSphere3D(maxRadius);
+                    break;
+            }
+            
+            ctx.restore();
+        }
+        
+        // Heart drawing function (improved)
+        function drawHeart(radius) {
+            ctx.beginPath();
+            
+            // Better heart curve parameters
+            const width = radius * 1.0;
+            const height = radius * 1.1;
+            
+            // Start at the bottom middle
+            ctx.moveTo(0, height * 0.3);
+            
+            // Left curve
+            ctx.bezierCurveTo(
+                -width, -height * 0.7, // control point 1
+                -width * 0.5, -height, // control point 2
+                0, -height * 0.5 // end point
+            );
+            
+            // Right curve
+            ctx.bezierCurveTo(
+                width * 0.5, -height, // control point 1
+                width, -height * 0.7, // control point 2
+                0, height * 0.3 // end point
+            );
+            
+            ctx.fill();
+        }
+        
+        // Star drawing function
+        function drawStar(radius) {
+            const points = parseInt(starPointsInput.value);
+            const innerRadius = radius * 0.4; // Fixed inner radius for simplicity
+            
+            ctx.beginPath();
+            
+            for (let i = 0; i < points * 2; i++) {
+                const currentRadius = i % 2 === 0 ? radius : innerRadius;
+                const angle = (Math.PI * i) / points - Math.PI / 2;
+                
+                const x = Math.cos(angle) * currentRadius;
+                const y = Math.sin(angle) * currentRadius;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Circle drawing function
+        function drawCircle(radius) {
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Square drawing function
+        function drawSquare(radius) {
+            const size = radius * 1.8; // Make it visually balanced
+            ctx.fillRect(-size/2, -size/2, size, size);
+        }
+        
+        // Triangle drawing function
+        function drawTriangle(radius) {
+            ctx.beginPath();
+            
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(-radius, radius);
+            ctx.lineTo(radius, radius);
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Rectangle drawing function
+        function drawRectangle(radius) {
+            const width = radius * 1.8;
+            const height = radius;
+            
+            ctx.fillRect(-width/2, -height/2, width, height);
+        }
+        
+        // Oval drawing function
+        function drawOval(radius) {
+            ctx.beginPath();
+            
+            // Draw an ellipse
+            ctx.ellipse(0, 0, radius, radius * 0.6, 0, 0, Math.PI * 2);
+            
+            ctx.fill();
+        }
+        
+        // Diamond drawing function
+        function drawDiamond(radius) {
+            ctx.beginPath();
+            
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(radius, 0);
+            ctx.lineTo(0, radius);
+            ctx.lineTo(-radius, 0);
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Cross drawing function
+        function drawCross(radius) {
+            const armWidth = radius * 0.25;
+            const armLength = radius * 1.6;
+            
+            ctx.fillRect(-armWidth, -armLength/2, armWidth*2, armLength);
+            ctx.fillRect(-armLength/2, -armWidth, armLength, armWidth*2);
+        }
+        
+        // Plus Sign drawing function
+        function drawPlus(radius) {
+            const armWidth = radius * 0.3;
+            const armLength = radius * 1.5;
+            
+            ctx.fillRect(-armWidth, -armLength/2, armWidth*2, armLength);
+            ctx.fillRect(-armLength/2, -armWidth, armLength, armWidth*2);
+        }
+        
+        // Arrow drawing function
+        function drawArrow(radius) {
+            ctx.beginPath();
+            
+            // Arrow head
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(radius * 0.6, -radius * 0.2);
+            ctx.lineTo(radius * 0.3, -radius * 0.2);
+            
+            // Arrow body
+            ctx.lineTo(radius * 0.3, radius);
+            ctx.lineTo(-radius * 0.3, radius);
+            ctx.lineTo(-radius * 0.3, -radius * 0.2);
+            ctx.lineTo(-radius * 0.6, -radius * 0.2);
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // House drawing function
+        function drawHouse(radius) {
+            // House base (square)
+            const baseSize = radius * 1.4;
+            ctx.fillRect(-baseSize/2, -baseSize/2 + radius * 0.3, baseSize, baseSize);
+            
+            // Roof (triangle)
+            ctx.beginPath();
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(-baseSize/2 - radius * 0.1, -baseSize/2 + radius * 0.3);
+            ctx.lineTo(baseSize/2 + radius * 0.1, -baseSize/2 + radius * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Door
+            ctx.fillStyle = currentBackgroundColor;
+            const doorWidth = baseSize * 0.3;
+            const doorHeight = baseSize * 0.5;
+            ctx.fillRect(-doorWidth/2, baseSize/2 - doorHeight + radius * 0.3, doorWidth, doorHeight);
+            
+            // Window
+            const windowSize = baseSize * 0.2;
+            ctx.fillRect(baseSize * 0.15, -baseSize * 0.1 + radius * 0.3, windowSize, windowSize);
+            
+            // Reset fill style
+            ctx.fillStyle = currentColor;
+        }
+        
+        // Tree drawing function
+        function drawTree(radius) {
+            // Tree trunk
+            const trunkWidth = radius * 0.25;
+            const trunkHeight = radius * 0.8;
+            ctx.fillRect(-trunkWidth/2, 0, trunkWidth, trunkHeight);
+            
+            // Tree crown (3 triangles)
+            ctx.beginPath();
+            
+            // Bottom triangle
+            ctx.moveTo(-radius, radius * 0.1);
+            ctx.lineTo(0, -radius * 0.6);
+            ctx.lineTo(radius, radius * 0.1);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Middle triangle
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.8, -radius * 0.2);
+            ctx.lineTo(0, -radius * 1.0);
+            ctx.lineTo(radius * 0.8, -radius * 0.2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Top triangle
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.6, -radius * 0.6);
+            ctx.lineTo(0, -radius * 1.3);
+            ctx.lineTo(radius * 0.6, -radius * 0.6);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Cloud drawing function
+        function drawCloud(radius) {
+            const r1 = radius * 0.5;
+            const r2 = radius * 0.6;
+            
+            // Draw 3 overlapping circles for a simple cloud
+            ctx.beginPath();
+            ctx.arc(-radius * 0.4, 0, r1, 0, Math.PI * 2);
+            ctx.arc(radius * 0.2, 0, r2, 0, Math.PI * 2);
+            ctx.arc(radius * 0.5, 0, r1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Moon drawing function
+        function drawMoon(radius) {
+            ctx.beginPath();
+            
+            // Outer circle
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            
+            // Inner circle (creates crescent)
+            ctx.moveTo(radius * 0.4, 0);
+            ctx.arc(radius * 0.4, 0, radius * 0.8, 0, Math.PI * 2, true);
+            
+            ctx.fill();
+        }
+        
+        // Lightning bolt drawing function
+        function drawLightning(radius) {
+            ctx.beginPath();
+            
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(radius * 0.3, -radius * 0.2);
+            ctx.lineTo(0, radius * 0.3);
+            ctx.lineTo(radius * 0.6, radius);
+            ctx.lineTo(radius * 0.2, 0);
+            ctx.lineTo(radius * 0.5, -radius * 0.4);
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Water drop drawing function
+        function drawDrop(radius) {
+            ctx.beginPath();
+            
+            // Drawing a teardrop shape
+            ctx.arc(0, 0, radius * 0.5, 0, Math.PI, true);
+            
+            // Draw the pointed bottom
+            ctx.lineTo(0, radius);
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Simple flower drawing function
+        function drawFlower(radius) {
+            // Draw petals (5 overlapping circles)
+            const petalRadius = radius * 0.5;
+            
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5;
+                const x = Math.cos(angle) * radius * 0.5;
+                const y = Math.sin(angle) * radius * 0.5;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, petalRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw center
+            ctx.beginPath();
+            ctx.fillStyle = currentBackgroundColor;
+            ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Reset fill style
+            ctx.fillStyle = currentColor;
+        }
+        
+        // Smiley face drawing function
+        function drawSmiley(radius) {
+            // Face circle
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = currentBackgroundColor;
+            ctx.beginPath();
+            ctx.arc(-radius * 0.3, -radius * 0.2, radius * 0.15, 0, Math.PI * 2);
+            ctx.arc(radius * 0.3, -radius * 0.2, radius * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Smile
+            ctx.beginPath();
+            ctx.arc(0, radius * 0.1, radius * 0.5, 0, Math.PI);
+            ctx.fill();
+            
+            // Reset fill style
+            ctx.fillStyle = currentColor;
+        }
+        
+        // Cube drawing function
+        function drawCube(radius) {
+            const size = radius * 0.8;
+            
+            // Front face
+            ctx.fillRect(-size, -size, size*2, size*2);
+            
+            // Top face
+            ctx.beginPath();
+            ctx.moveTo(-size, -size);
+            ctx.lineTo(0, -size*1.5);
+            ctx.lineTo(size*2, -size*1.5);
+            ctx.lineTo(size, -size);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Right face
+            ctx.beginPath();
+            ctx.moveTo(size, -size);
+            ctx.lineTo(size*2, -size*1.5);
+            ctx.lineTo(size*2, size*0.5);
+            ctx.lineTo(size, size);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Pyramid drawing function
+        function drawPyramid(radius) {
+            const baseSize = radius * 1.5;
+            
+            // Base
+            ctx.beginPath();
+            ctx.moveTo(-baseSize/2, baseSize/2);
+            ctx.lineTo(baseSize/2, baseSize/2);
+            ctx.lineTo(baseSize/2, -baseSize/2);
+            ctx.lineTo(-baseSize/2, -baseSize/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Front triangle
+            ctx.beginPath();
+            ctx.moveTo(-baseSize/2, -baseSize/2);
+            ctx.lineTo(0, -baseSize*1.2);
+            ctx.lineTo(baseSize/2, -baseSize/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Right triangle
+            ctx.beginPath();
+            ctx.moveTo(baseSize/2, -baseSize/2);
+            ctx.lineTo(0, -baseSize*1.2);
+            ctx.lineTo(baseSize/2, baseSize/2);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Cylinder drawing function
+        function drawCylinder(radius) {
+            // Top ellipse
+            ctx.beginPath();
+            ctx.ellipse(0, -radius*0.6, radius*0.8, radius*0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Body rectangle
+            ctx.fillRect(-radius*0.8, -radius*0.6, radius*1.6, radius*1.2);
+            
+            // Bottom ellipse
+            ctx.beginPath();
+            ctx.ellipse(0, radius*0.6, radius*0.8, radius*0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Cone drawing function
+        function drawCone(radius) {
+            // Base ellipse
+            ctx.beginPath();
+            ctx.ellipse(0, radius*0.6, radius*0.8, radius*0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cone sides
+            ctx.beginPath();
+            ctx.moveTo(-radius*0.8, radius*0.6);
+            ctx.lineTo(0, -radius*0.8);
+            ctx.lineTo(radius*0.8, radius*0.6);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // 3D Sphere drawing function
+        function drawSphere3D(radius) {
+            // Main circle
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Highlight to give 3D effect
+            ctx.beginPath();
+            ctx.fillStyle = currentBackgroundColor;
+            ctx.ellipse(-radius*0.3, -radius*0.3, radius*0.25, radius*0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Reset fill style
+            ctx.fillStyle = currentColor;
+        }
+        
+        // Regular polygon drawing function
+        function drawPolygon(radius, sides) {
+            ctx.beginPath();
+            
+            for (let i = 0; i < sides; i++) {
+                const angle = i * 2 * Math.PI / sides - Math.PI / 2;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Download shape as PNG
+        function downloadShape() {
+            const fileName = fileNameInput.value || 'shape';
+            let exportCanvas = canvas;
+            
+            // If strict binary, create a new canvas with pure binary values
+            if (strictBinaryCheckbox.checked) {
+                // Create a temporary canvas for processing
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Draw the original image
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                // Get image data
+                const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                const data = imageData.data;
+                
+                // Convert to strict binary (0 or 255 values only)
+                const bgColorObj = getColorComponents(currentBackgroundColor);
+                const fgColorObj = getColorComponents(currentColor);
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    // Check similarity to foreground color
+                    if (isCloserToForeground(data[i], data[i+1], data[i+2], bgColorObj, fgColorObj)) {
+                        // Set to foreground color
+                        data[i] = fgColorObj.r;
+                        data[i+1] = fgColorObj.g;
+                        data[i+2] = fgColorObj.b;
+                        data[i+3] = 255; // Full opacity
+                    } else {
+                        // Set to background color
+                        data[i] = bgColorObj.r;
+                        data[i+1] = bgColorObj.g;
+                        data[i+2] = bgColorObj.b;
+                        data[i+3] = 255; // Full opacity
+                    }
+                }
+                
+                // Put the modified data back
+                tempCtx.putImageData(imageData, 0, 0);
+                exportCanvas = tempCanvas;
+            }
+            
+            // Create download link
+            const link = document.createElement('a');
+            const suffix = strictBinaryCheckbox.checked ? '-binary' : '';
+            link.download = `${fileName}${suffix}.png`;
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Determine if a color is closer to foreground than background
+        function isCloserToForeground(r, g, b, bgColor, fgColor) {
+            // Calculate distances using a simple formula
+            const distToBg = Math.sqrt(
+                Math.pow(r - bgColor.r, 2) + 
+                Math.pow(g - bgColor.g, 2) + 
+                Math.pow(b - bgColor.b, 2)
+            );
+            
+            const distToFg = Math.sqrt(
+                Math.pow(r - fgColor.r, 2) + 
+                Math.pow(g - fgColor.g, 2) + 
+                Math.pow(b - fgColor.b, 2)
+            );
+            
+            // Return true if closer to foreground
+            return distToFg < distToBg;
+        }
+        
+        // Get RGB components from color name
+        function getColorComponents(colorName) {
+            // Create a temporary element to compute the RGB values
+            const tempElement = document.createElement('div');
+            tempElement.style.color = colorName;
+            document.body.appendChild(tempElement);
+            const color = window.getComputedStyle(tempElement).color;
+            document.body.removeChild(tempElement);
+            
+            // Parse the rgb values
+            const rgbMatch = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (rgbMatch) {
+                return {
+                    r: parseInt(rgbMatch[1]),
+                    g: parseInt(rgbMatch[2]),
+                    b: parseInt(rgbMatch[3])
+                };
+            }
+            
+            // Default values for common colors
+            const colorMap = {
+                'black': {r: 0, g: 0, b: 0},
+                'white': {r: 255, g: 255, b: 255},
+                'red': {r: 255, g: 0, b: 0},
+                'green': {r: 0, g: 128, b: 0},
+                'blue': {r: 0, g: 0, b: 255}
+            };
+            
+            return colorMap[colorName] || {r: 0, g: 0, b: 0};
+        }
+        
+        // Add current shape to gallery
+        function addToGallery() {
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            
+            // Create image source based on current settings
+            let imgSrc;
+            if (strictBinaryCheckbox.checked) {
+                // Create binary version for gallery
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCtx.drawImage(canvas, 0, 0);
+                const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                const data = imageData.data;
+                
+                const bgColorObj = getColorComponents(currentBackgroundColor);
+                const fgColorObj = getColorComponents(currentColor);
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    if (isCloserToForeground(data[i], data[i+1], data[i+2], bgColorObj, fgColorObj)) {
+                        data[i] = fgColorObj.r;
+                        data[i+1] = fgColorObj.g;
+                        data[i+2] = fgColorObj.b;
+                        data[i+3] = 255;
+                    } else {
+                        data[i] = bgColorObj.r;
+                        data[i+1] = bgColorObj.g;
+                        data[i+2] = bgColorObj.b;
+                        data[i+3] = 255;
+                    }
+                }
+                
+                tempCtx.putImageData(imageData, 0, 0);
+                imgSrc = tempCanvas.toDataURL('image/png');
+            } else {
+                imgSrc = canvas.toDataURL('image/png');
+            }
+            
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = 'Generated Shape';
+            
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = 'Download';
+            downloadBtn.addEventListener('click', function() {
+                const link = document.createElement('a');
+                const suffix = strictBinaryCheckbox.checked ? '-binary' : '';
+                link.download = `${fileNameInput.value || 'shape'}${suffix}-${Date.now()}.png`;
+                link.href = img.src;
+                link.click();
+            });
+            
+            galleryItem.appendChild(img);
+            galleryItem.appendChild(downloadBtn);
+            gallery.appendChild(galleryItem);
+        }
+        
+        // Clear gallery
+        function clearGallery() {
+            gallery.innerHTML = '';
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

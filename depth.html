@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Depth Map Video Noise Animation – Uniform Foreground Speed (Seamless & Recordable)</title>
+  <style>
+    body {
+      background: #222;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #555;
+      margin-top: 20px;
+      /* When scaled, force nearest-neighbor interpolation */
+      image-rendering: pixelated;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    .controls label,
+    .controls input,
+    .controls button {
+      margin: 5px;
+      font-size: 1rem;
+    }
+    /* Hide the video element (it supplies depth-map frames only) */
+    video {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Depth Map Video Noise Animation – Uniform Foreground Speed (Seamless & Recordable)</h1>
+  <p>
+    Upload a grayscale depth map video or image. Pixels classified as foreground (bright areas) move uniformly while background pixels remain static.
+  </p>
+  <div class="controls">
+    <div>
+      <label>Depth Source:</label>
+      <label><input type="radio" name="depthSource" value="video" checked> Video</label>
+      <label><input type="radio" name="depthSource" value="image"> Image</label>
+    </div>
+    <br>
+    <div id="videoInputContainer">
+      <label for="depthVideoInput">Depth Map Video:</label>
+      <input type="file" id="depthVideoInput" accept="video/*">
+    </div>
+    <div id="imageInputContainer" style="display: none;">
+      <label for="depthImageInput">Depth Map Image:</label>
+      <input type="file" id="depthImageInput" accept="image/*">
+    </div>
+    <br>
+    <label for="speedInput">Foreground Speed (px/sec):</label>
+    <input type="number" id="speedInput" value="60" min="1" max="300">
+    <br>
+    <label for="lowerThresholdInput">Foreground Threshold (Lower Bound):</label>
+    <input type="range" id="lowerThresholdInput" value="128" min="0" max="255" step="1">
+    <span id="lowerThresholdValue">128</span>
+    <br>
+    <label for="upperThresholdInput">Foreground Threshold (Upper Bound):</label>
+    <input type="range" id="upperThresholdInput" value="255" min="0" max="255" step="1">
+    <span id="upperThresholdValue">255</span>
+    <br>
+    <label for="edgeThresholdInput">Edge Detection Threshold:</label>
+    <input type="range" id="edgeThresholdInput" value="30" min="0" max="100" step="1">
+    <span id="edgeThresholdValue">30</span>
+    <br>
+    <label for="movementDirection">Movement Direction:</label>
+    <select id="movementDirection">
+      <option value="vertical">Vertical</option>
+      <option value="horizontal">Horizontal</option>
+    </select>
+    <br>
+    <label for="noiseDensityInput">Noise Density (%):</label>
+    <input type="number" id="noiseDensityInput" value="50" min="1" max="100">
+    <br>
+    <label for="speckleSizeInput">Speckle Size (px):</label>
+    <input type="number" id="speckleSizeInput" value="3" min="1" max="10">
+    <br>
+    <label for="recordDurationInput">Record Duration (seconds):</label>
+    <input type="number" id="recordDurationInput" value="5" min="1" max="60">
+    <button id="recordButton">Record Video</button>
+    <br>
+    <button id="pauseButton">Pause</button>
+  </div>
+  <canvas id="noiseCanvas" width="960" height="540"></canvas>
+  <!-- The video element is used only for extracting depth-map frames -->
+  <video id="depthVideo" loop muted></video>
+
+  <script>
+    // === Canvas Setup ===
+    const canvas = document.getElementById('noiseCanvas');
+    const ctx = canvas.getContext('2d');
+    // Disable smoothing on the visible canvas.
+    ctx.imageSmoothingEnabled = false;
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // === Global Parameters ===
+    let foregroundSpeed = parseFloat(document.getElementById('speedInput').value) || 60;
+    document.getElementById('speedInput').addEventListener('input', (e) => {
+      foregroundSpeed = parseFloat(e.target.value) || 60;
+    });
+
+    // Animation state
+    let isPaused = false;
+    let animationFrameId = null;
+    
+    // Pause/Resume button
+    const pauseButton = document.getElementById('pauseButton');
+    pauseButton.addEventListener('click', () => {
+      isPaused = !isPaused;
+      pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
+      
+      if (!isPaused && !animationFrameId) {
+        // Resume animation if it was paused
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    });
+
+    // Toggle between video and image depth source
+    const depthSourceRadios = document.querySelectorAll('input[name="depthSource"]');
+    const videoInputContainer = document.getElementById('videoInputContainer');
+    const imageInputContainer = document.getElementById('imageInputContainer');
+    
+    depthSourceRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'video') {
+          videoInputContainer.style.display = 'block';
+          imageInputContainer.style.display = 'none';
+        } else {
+          videoInputContainer.style.display = 'none';
+          imageInputContainer.style.display = 'block';
+        }
+      });
+    });
+
+    // Update foregroundThreshold from slider
+    const lowerThresholdInput = document.getElementById('lowerThresholdInput');
+    const lowerThresholdValueDisplay = document.getElementById('lowerThresholdValue');
+    const upperThresholdInput = document.getElementById('upperThresholdInput');
+    const upperThresholdValueDisplay = document.getElementById('upperThresholdValue');
+    const edgeThresholdInput = document.getElementById('edgeThresholdInput');
+    const edgeThresholdValueDisplay = document.getElementById('edgeThresholdValue');
+    
+    let lowerThreshold = 128; // pixels with brightness >= lowerThreshold are considered foreground
+    let upperThreshold = 255; // pixels with brightness <= upperThreshold are considered foreground
+    let edgeThreshold = 30; // threshold for edge detection
+    
+    lowerThresholdInput.addEventListener('input', (e) => {
+      lowerThreshold = parseInt(e.target.value);
+      lowerThresholdValueDisplay.textContent = lowerThreshold;
+      
+      // Ensure lower threshold doesn't exceed upper threshold
+      if (lowerThreshold > upperThreshold) {
+        upperThreshold = lowerThreshold;
+        upperThresholdInput.value = upperThreshold;
+        upperThresholdValueDisplay.textContent = upperThreshold;
+      }
+    });
+    
+    upperThresholdInput.addEventListener('input', (e) => {
+      upperThreshold = parseInt(e.target.value);
+      upperThresholdValueDisplay.textContent = upperThreshold;
+      
+      // Ensure upper threshold isn't below lower threshold
+      if (upperThreshold < lowerThreshold) {
+        lowerThreshold = upperThreshold;
+        lowerThresholdInput.value = lowerThreshold;
+        lowerThresholdValueDisplay.textContent = lowerThreshold;
+      }
+    });
+    
+    edgeThresholdInput.addEventListener('input', (e) => {
+      edgeThreshold = parseInt(e.target.value);
+      edgeThresholdValueDisplay.textContent = edgeThreshold;
+    });
+
+    // Movement direction
+    let movementDirection = 'vertical'; // Default to vertical movement
+    document.getElementById('movementDirection').addEventListener('change', (e) => {
+      movementDirection = e.target.value;
+      // Regenerate noise field when direction changes to ensure seamless tiling
+      generateNoiseField();
+    });
+
+    // === Generate a Static, Seamless Noise Field ===
+    const noiseField = new Uint8ClampedArray(width * height);
+    let speckleSize = parseInt(document.getElementById('speckleSizeInput').value) || 3; // size (in pixels) of each noise block
+    let noiseDensity = parseInt(document.getElementById('noiseDensityInput').value) || 50; // percentage of white pixels
+
+    // Event listeners for noise parameters
+    document.getElementById('speckleSizeInput').addEventListener('change', () => {
+      speckleSize = parseInt(document.getElementById('speckleSizeInput').value) || 3;
+      generateNoiseField();
+    });
+
+    document.getElementById('noiseDensityInput').addEventListener('change', () => {
+      noiseDensity = 100-parseInt(document.getElementById('noiseDensityInput').value) || 50;
+      generateNoiseField();
+    });
+
+    function generateNoiseField() {
+      // Fill the noise field in blocks.
+      for (let y = 0; y < height; y += speckleSize) {
+        for (let x = 0; x < width; x += speckleSize) {
+          // Randomly choose black or white based on noise density.
+          const value = (Math.random() * 100 < noiseDensity) ? 255 : 0;
+          for (let dy = 0; dy < speckleSize && (y + dy) < height; dy++) {
+            for (let dx = 0; dx < speckleSize && (x + dx) < width; dx++) {
+              noiseField[(y + dy) * width + (x + dx)] = value;
+            }
+          }
+        }
+      }
+
+      // Make the noise field seamlessly tile in the appropriate direction
+      if (movementDirection === 'vertical') {
+        // Copy the first 'speckleSize' rows to the very bottom rows.
+        for (let y = 0; y < speckleSize; y++) {
+          const destY = height - speckleSize + y;
+          if (destY < height) {
+            for (let x = 0; x < width; x++) {
+              noiseField[destY * width + x] = noiseField[y * width + x];
+            }
+          }
+        }
+      } else { // horizontal
+        // Copy the first 'speckleSize' columns to the very right columns.
+        for (let x = 0; x < speckleSize; x++) {
+          const destX = width - speckleSize + x;
+          if (destX < width) {
+            for (let y = 0; y < height; y++) {
+              noiseField[y * width + destX] = noiseField[y * width + x];
+            }
+          }
+        }
+      }
+    }
+    generateNoiseField();
+
+    // === Offscreen Canvas for Depth Video Frames ===
+    const depthCanvas = document.createElement('canvas');
+    depthCanvas.width = width;
+    depthCanvas.height = height;
+    const depthCtx = depthCanvas.getContext('2d');
+    // Disable smoothing on the offscreen canvas as well.
+    depthCtx.imageSmoothingEnabled = false;
+
+    // Stores the current depth frame's pixel data.
+    let depthData = null;
+    const defaultDepthValue = 0;
+    
+    // Flag to track if we're using image or video for depth
+    let usingDepthImage = false;
+    let depthImage = new Image();
+
+    // === Video Setup ===
+    const depthVideo = document.getElementById('depthVideo');
+    document.getElementById('depthVideoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      depthVideo.src = url;
+      depthVideo.play();
+      usingDepthImage = false;
+      
+      // Select video radio button when video is uploaded
+      document.querySelector('input[name="depthSource"][value="video"]').checked = true;
+      videoInputContainer.style.display = 'block';
+      imageInputContainer.style.display = 'none';
+    });
+    
+    // === Depth Image Setup ===
+    document.getElementById('depthImageInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      depthImage = new Image();
+      depthImage.onload = () => {
+        // Clear the canvas and draw the image
+        depthCtx.clearRect(0, 0, width, height);
+        depthCtx.drawImage(depthImage, 0, 0, width, height);
+        
+        // Get the pixel data immediately after drawing
+        depthData = depthCtx.getImageData(0, 0, width, height).data;
+        
+        // Set the flag to use image instead of video
+        usingDepthImage = true;
+        
+        // Force a redraw
+        if (isPaused) {
+          // If paused, just draw one frame
+          const timestamp = performance.now();
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+          }
+          animate(timestamp);
+        }
+        
+        console.log("Depth image loaded, dimensions:", depthImage.width, "x", depthImage.height);
+      };
+      depthImage.src = url;
+      
+      // Select image radio button when image is uploaded
+      document.querySelector('input[name="depthSource"][value="image"]').checked = true;
+      videoInputContainer.style.display = 'none';
+      imageInputContainer.style.display = 'block';
+    });
+
+    // === Animation Loop ===
+    // For each pixel, we check its depth value from the video.
+    // If the pixel is foreground (brightness >= threshold), it moves uniformly.
+    let startTime = null;
+    function animate(timestamp) {
+      if (isPaused) {
+        animationFrameId = null;
+        return;
+      }
+      
+      animationFrameId = requestAnimationFrame(animate);
+      
+      if (!startTime) startTime = timestamp;
+      const elapsedSeconds = (timestamp - startTime) / 1000;
+
+      // Update the depth frame if available.
+      if (!usingDepthImage && depthVideo.readyState >= 2) { // HAVE_CURRENT_DATA
+        depthCtx.drawImage(depthVideo, 0, 0, width, height);
+        depthData = depthCtx.getImageData(0, 0, width, height).data;
+      }
+
+      // Draw the noise field with the appropriate offset.
+      const imageData = ctx.createImageData(width, height);
+      const data = imageData.data;
+
+      // Calculate the offset based on time and speed.
+      // For vertical movement, we need the y-offset.
+      // For horizontal movement, we need the x-offset.
+      const pixelsPerSecond = foregroundSpeed;
+      const totalOffset = pixelsPerSecond * elapsedSeconds;
+      
+      // Modulo by the canvas dimension to ensure we loop.
+      const offset = movementDirection === 'vertical'
+        ? Math.floor(totalOffset) % height
+        : Math.floor(totalOffset) % width;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          // Get the depth value (0-255) for this pixel.
+          // We only care about the red channel (index 0) since it's grayscale.
+          const i = (y * width + x) * 4;
+          
+          // Default depth value if no depth data is available
+          let depth = defaultDepthValue;
+          
+          // Use depth data if available
+          if (depthData) {
+            depth = depthData[i];
+            
+            // Check if this pixel is at an edge by comparing with neighboring pixels
+            let isEdge = false;
+            
+            // Only check for edges if we have depth data and the pixel is within the foreground threshold
+            if (depth >= lowerThreshold && depth <= upperThreshold) {
+              // Check neighboring pixels (with bounds checking)
+              const neighbors = [];
+              
+              // Add neighboring pixels' depth values to the array
+              if (x > 0) neighbors.push(depthData[i - 4]); // left
+              if (x < width - 1) neighbors.push(depthData[i + 4]); // right
+              if (y > 0) neighbors.push(depthData[(y - 1) * width * 4 + x * 4]); // top
+              if (y < height - 1) neighbors.push(depthData[(y + 1) * width * 4 + x * 4]); // bottom
+              
+              // Check if any neighbor has a significantly different depth value
+              for (const neighborDepth of neighbors) {
+                if (Math.abs(depth - neighborDepth) > edgeThreshold) {
+                  isEdge = true;
+                  break;
+                }
+              }
+            }
+            
+            // If this pixel is at an edge, treat it as background
+            if (isEdge) {
+              depth = 0; // Force to background
+            }
+          }
+
+          // Determine the offset based on direction.
+          let offsetX = x;
+          let offsetY = y;
+
+          // Apply the offset only to foreground pixels.
+          if (depth >= lowerThreshold && depth <= upperThreshold) {
+            if (movementDirection === 'vertical') {
+              offsetY = (y + offset) % height;
+            } else {
+              offsetX = (x + offset) % width;
+            }
+          }
+
+          // Sample the noise field at the offset position.
+          const sampleIndex = offsetY * width + offsetX;
+          const noiseValue = noiseField[sampleIndex];
+
+          // Write the noise value into the frame data.
+          data[i + 0] = noiseValue;
+          data[i + 1] = noiseValue;
+          data[i + 2] = noiseValue;
+          data[i + 3] = 255;
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    }
+    
+    // Start the animation
+    animationFrameId = requestAnimationFrame(animate);
+
+    // === Recording Functionality ===
+    let isRecording = false;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    const recordButton = document.getElementById('recordButton');
+    const recordDurationInput = document.getElementById('recordDurationInput');
+
+    recordButton.addEventListener('click', () => {
+      if (isRecording) return; // Prevent re-triggering if already recording
+
+      const durationSeconds = parseFloat(recordDurationInput.value) || 5;
+      const durationMs = durationSeconds * 1000;
+
+      // Capture the canvas stream (using 60 fps).
+      const stream = canvas.captureStream(60);
+      recordedChunks = [];
+      const options = { mimeType: 'video/webm; codecs=vp9' };
+
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (err) {
+        // Fallback if VP9 is not supported.
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'recorded-video.webm';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      mediaRecorder.start();
+      isRecording = true;
+      recordButton.textContent = 'Recording...';
+
+      // Stop recording after the specified duration.
+      setTimeout(() => {
+        mediaRecorder.stop();
+        isRecording = false;
+        recordButton.textContent = 'Record Video';
+      }, durationMs);
+    });
+  </script>
+</body>
+</html>

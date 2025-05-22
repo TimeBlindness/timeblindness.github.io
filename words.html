@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Noise Animation + Depth Map (Hide Text/Shapes on Depth)</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1a1a1a;
+      color: white;
+      gap: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .container {
+      display: flex; 
+      flex-direction: column; 
+      gap: 20px; 
+      padding: 20px;
+      background: #2a2a2a; 
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    canvas {
+      border: 2px solid #444; 
+      border-radius: 8px; 
+      cursor: pointer;
+      max-width: 100%; 
+      height: auto;
+    }
+    .controls {
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 15px; 
+      padding: 15px; 
+      background: #333; 
+      border-radius: 8px;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    label {
+      font-size: 14px;
+      color: #aaa;
+    }
+    input, select, button {
+      padding: 8px 12px; 
+      font-size: 14px; 
+      border: 1px solid #444;
+      border-radius: 4px; 
+      background: #2a2a2a; 
+      color: white;
+    }
+    .record-button {
+      background: #e74c3c;
+    }
+    .record-button.recording {
+      background: #27ae60;
+    }
+    .record-button.recording:hover {
+      background: #1faa51;
+    }
+    .disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="controls">
+    <!-- Depth Map Toggle -->
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="useDepthMap">
+        Use Depth Map (Hide Text/Shape/Image)
+      </label>
+
+      <label>Depth Source</label>
+      <div style="display:flex; gap:8px;">
+        <label><input type="radio" name="depthSrc" value="image" checked> Image</label>
+        <label><input type="radio" name="depthSrc" value="video"> Video</label>
+      </div>
+
+      <label for="depthImageInput">Depth Map Image</label>
+      <input type="file" id="depthImageInput" accept="image/*">
+
+      <label for="depthVideoInput">Depth Map Video</label>
+      <input type="file" id="depthVideoInput" accept="video/*">
+
+      <label for="depthScaleInput">Depth Scale</label>
+      <input type="number" id="depthScaleInput" value="2" step="0.5">
+    </div>
+
+    <!-- Content Type -->
+    <div class="control-group" id="contentTypeGroup">
+      <label for="contentType">Content Type</label>
+      <select id="contentType">
+        <option value="text">Text</option>
+        <option value="image">Image</option>
+        <option value="shape">Shape</option>
+      </select>
+    </div>
+
+    <!-- Text Controls -->
+    <div class="control-group" id="textControls">
+      <label for="textInput">Text</label>
+      <input type="text" id="textInput" value="NOISE">
+    </div>
+
+    <!-- Foreground Image Controls -->
+    <div class="control-group" id="imageControls" style="display:none;">
+      <label for="imageInput">Foreground Image (PNG)</label>
+      <input type="file" id="imageInput" accept="image/*">
+    </div>
+
+    <!-- Shape Controls -->
+    <div class="control-group" id="shapeControls" style="display:none;">
+      <label for="shapeType">Shape Type</label>
+      <select id="shapeType">
+        <option value="rectangle">Rectangle</option>
+        <option value="circle">Circle</option>
+        <option value="polygon">Polygon</option>
+      </select>
+
+      <label for="shapeSize">Size (px)</label>
+      <input type="number" id="shapeSize" value="100" min="10">
+
+      <label for="shapeSides">Polygon Sides</label>
+      <input type="number" id="shapeSides" value="5" min="3">
+
+      <label>
+        <input type="checkbox" id="shapeMoveToggle">
+        Enable Movement
+      </label>
+    </div>
+
+    <!-- Font Size -->
+    <div class="control-group" id="fontSizeGroup">
+      <label for="fontSizeInput">Font Size (%)</label>
+      <input type="number" id="fontSizeInput" value="30">
+    </div>
+
+    <!-- Speed -->
+    <div class="control-group">
+      <label for="speedInput">Animation Speed</label>
+      <input type="number" id="speedInput" value="2" step="0.5">
+    </div>
+
+    <!-- Noise Density -->
+    <div class="control-group">
+      <label for="bgDensityInput">Background Noise Density (%)</label>
+      <input type="number" id="bgDensityInput" value="50">
+      
+      <label for="fgDensityInput">Foreground Noise Density (%)</label>
+      <input type="number" id="fgDensityInput" value="50">
+    </div>
+
+    <!-- Remove Background Noise -->
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="removeBackgroundNoise">
+        Remove Background Noise
+      </label>
+      <small style="color: #888; margin-top: -5px;">
+        Replaces noise with solid color in background areas
+      </small>
+      <div id="bgColorContainer" style="display:none;">
+        <label for="bgColorPicker">Background Color</label>
+        <input type="color" id="bgColorPicker" value="#ffffff">
+        
+        <div id="depthThresholdContainer" style="display:none; margin-top: 8px;">
+          <label for="depthThreshold">Depth Threshold</label>
+          <input type="range" id="depthThreshold" min="0" max="100" value="5">
+          <small style="color: #888;">Depth cutoff for background color</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Speckle Size -->
+    <div class="control-group">
+      <label for="speckleSizeInput">Speckle Size</label>
+      <input type="number" id="speckleSizeInput" value="3">
+    </div>
+
+    <!-- Pause/Resume -->
+    <div class="control-group">
+      <button id="pauseButton">Pause</button>
+    </div>
+
+    <!-- Random Position -->
+    <div class="control-group">
+      <button id="randomButton">Random Position</button>
+    </div>
+
+    <!-- Record Duration -->
+    <div class="control-group">
+      <label for="recordDurationInput">Record Duration (seconds)</label>
+      <input type="number" id="recordDurationInput" value="5">
+    </div>
+
+    <!-- Record -->
+    <div class="control-group">
+      <button id="recordButton" class="record-button">Start Recording</button>
+    </div>
+  </div>
+
+  <!-- Main Canvas -->
+  <canvas id="noiseCanvas"></canvas>
+</div>
+
+<script>
+/****************************************************
+ * Noise Animation with Depth Map
+ * - If "Use Depth Map" is on, we hide text/shape/image.
+ * - Otherwise, the original foreground masking is used.
+ * - Depth map can be from an image or a looping video.
+ ****************************************************/
+
+// === Canvas & Context ===
+const canvas = document.getElementById('noiseCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 960;
+canvas.height = 540;
+
+// === Depth Map State ===
+let useDepth = false;          // toggled by checkbox
+let depthSrcMode = "image";    // "image" or "video"
+let depthScale = 2;            // how strongly brightness => speed
+
+// Depth Image (static)
+let depthImageData = null;     // RGBA array from the uploaded image
+
+// Depth Video (dynamic)
+let depthVideo = null;         // <video> element
+let depthCanvas = null;        // offscreen <canvas> for reading frames
+let depthCtx = null;           // context of that offscreen
+
+/***************************************************
+ * Normal "Foreground" State
+ ***************************************************/
+let contentType = "text";  // text, image, shape
+let currentText = "NOISE";
+let currentImage = null;
+
+// text
+let fontSize = 30;
+
+// shape
+let shapeType = "rectangle";
+let shapeSize = 100;
+let shapeSides = 5;
+let shapeMoveEnabled = false;
+let shapeVelX = 2, shapeVelY = 2;
+
+// position
+let contentX = canvas.width/2;
+let contentY = canvas.height/2;
+
+/***************************************************
+ * Noise & Animation
+ ***************************************************/
+let animationSpeed = 2;
+let bgNoiseDensity = 0.5; // 50%
+let fgNoiseDensity = 0.5; // 50%
+let speckleSize = 3;  
+let backgroundNoise = [];
+let foregroundNoise = [];
+let maskData = null;
+let removeBackgroundNoise = false;
+let backgroundColor = "#ffffff"; // Default white background
+let depthThreshold = 5; // Default depth threshold (0-100)
+
+let backgroundOffset = 0;
+let foregroundOffset = 0;
+let animationDirection = "vertical";
+let isPaused = false;
+let animationFrame = null;
+let startTime = null;
+const fps = 60;
+
+/***************************************************
+ * Recording
+ ***************************************************/
+let isRecording = false;
+let mediaRecorder;
+let recordedChunks = [];
+let recordDurationMs = 5000;
+
+/***************************************************
+ * Generate Noise
+ ***************************************************/
+function generateBinaryNoise(array, densityValue) {
+  const w = canvas.width, h = canvas.height;
+  array.fill(0);
+  for (let y=0; y<h; y+= speckleSize) {
+    for (let x=0; x<w; x+= speckleSize) {
+      const val = Math.random() > densityValue ? 255 : 0;
+      for (let dy=0; dy<speckleSize && (y+dy)<h; dy++) {
+        for (let dx=0; dx<speckleSize && (x+dx)<w; dx++) {
+          const idx = (y+dy)*w + (x+dx);
+          array[idx] = val;
+        }
+      }
+    }
+  }
+}
+function refreshNoise() {
+  backgroundNoise = new Array(canvas.width*canvas.height).fill(0);
+  foregroundNoise = new Array(canvas.width*canvas.height).fill(0);
+  generateBinaryNoise(backgroundNoise, bgNoiseDensity);
+  generateBinaryNoise(foregroundNoise, fgNoiseDensity);
+}
+refreshNoise();
+
+/***************************************************
+ * Wrapping & Bounds
+ ***************************************************/
+function wrapTextLines(ctx, text, maxWidth) {
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = "";
+  words.forEach(word => {
+    const testLine = line ? line + " " + word : word;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = testLine;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+function autoScaleFont(ctx, text) {
+  const minDim = Math.min(canvas.width, canvas.height);
+  let trySize = minDim*(fontSize/100);
+  const maxWidth = canvas.width*0.9;
+  const maxHeight = canvas.height*0.9;
+  const lhFactor = 1.2;
+
+  for (; trySize>=10; trySize--) {
+    ctx.font = `bold ${trySize}px sans-serif`;
+    const lines = wrapTextLines(ctx, text, maxWidth);
+    const totalH = lines.length*(trySize*lhFactor);
+    if (totalH <= maxHeight) return trySize;
+  }
+  return 10;
+}
+function getContentBounds() {
+  if (contentType==="text") {
+    const px = Math.min(canvas.width, canvas.height)*(fontSize/100);
+    ctx.font = `bold ${px}px sans-serif`;
+    const w = ctx.measureText(currentText).width;
+    return { width:w, height:px };
+  }
+  else if (contentType==="image" && currentImage) {
+    const scale = Math.min(
+      (canvas.width*0.8)/currentImage.width,
+      (canvas.height*0.8)/currentImage.height, 1
+    );
+    return {
+      width: currentImage.width*scale,
+      height: currentImage.height*scale
+    };
+  }
+  else if (contentType==="shape") {
+    return { width: shapeSize, height: shapeSize };
+  }
+  return { width:0, height:0 };
+}
+function constrainPosition(x, y, w, h) {
+  let nx = x, ny = y;
+  const halfW = w/2, halfH = h/2;
+  if (nx < halfW) nx = halfW;
+  if (nx > canvas.width - halfW) nx = canvas.width - halfW;
+  if (ny < halfH) ny = halfH;
+  if (ny > canvas.height - halfH) ny = canvas.height - halfH;
+  return {x:nx, y:ny};
+}
+
+/***************************************************
+ * Drawing
+ ***************************************************/
+function drawShape(maskCtx, cx, cy) {
+  maskCtx.fillStyle = 'white';
+  maskCtx.beginPath();
+  if (shapeType==='rectangle') {
+    maskCtx.rect(cx - shapeSize/2, cy - shapeSize/2, shapeSize, shapeSize);
+  } 
+  else if (shapeType==='circle') {
+    maskCtx.arc(cx, cy, shapeSize/2, 0, 2*Math.PI);
+  }
+  else if (shapeType==='polygon') {
+    const sides = Math.max(3, shapeSides);
+    const r = shapeSize/2;
+    for (let i=0; i<sides; i++) {
+      const angle = (i/sides)*(2*Math.PI);
+      const px = cx + r*Math.cos(angle);
+      const py = cy + r*Math.sin(angle);
+      if (i===0) maskCtx.moveTo(px, py);
+      else maskCtx.lineTo(px, py);
+    }
+    maskCtx.closePath();
+  }
+  maskCtx.fill();
+}
+
+/***************************************************
+ * updateMask()
+ *  - If depth is on, we ignore text/shape => maskData = null
+ *  - If depth is off, we build the usual mask
+ ***************************************************/
+function updateMask() {
+  if (useDepth) {
+    // Hide text/shapes. Just do single-layer noise
+    maskData = null;
+    return;
+  }
+  // Otherwise, normal flow...
+  refreshNoise();
+
+  const mCanvas = document.createElement('canvas');
+  mCanvas.width = canvas.width;
+  mCanvas.height = canvas.height;
+  const mCtx = mCanvas.getContext('2d');
+  mCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (contentType==="text") {
+    const finalSize = autoScaleFont(mCtx, currentText);
+    mCtx.font = `bold ${finalSize}px sans-serif`;
+    mCtx.fillStyle = 'white';
+    mCtx.textAlign = 'center';
+    mCtx.textBaseline = 'middle';
+
+    const maxWidth = canvas.width*0.9;
+    const lineH = finalSize*1.2;
+    const lines = wrapTextLines(mCtx, currentText, maxWidth);
+    const totalH = lines.length*lineH;
+    let startY = contentY - totalH/2;
+    lines.forEach(line => {
+      mCtx.fillText(line, contentX, startY + lineH/2);
+      startY += lineH;
+    });
+  }
+  else if (contentType==="image" && currentImage) {
+    const margin=20, mw=canvas.width-margin*2, mh=canvas.height-margin*2;
+    const scale = Math.min(mw/currentImage.width, mh/currentImage.height, 1);
+    const dw = currentImage.width*scale;
+    const dh = currentImage.height*scale;
+    const dx = contentX - dw/2;
+    const dy = contentY - dh/2;
+    mCtx.drawImage(currentImage, dx, dy, dw, dh);
+  }
+  else if (contentType==="shape") {
+    drawShape(mCtx, contentX, contentY);
+  }
+
+  maskData = mCtx.getImageData(0,0, canvas.width, canvas.height).data;
+}
+
+/***************************************************
+ * shape movement
+ ***************************************************/
+function updateShapeMovement() {
+  if (!shapeMoveEnabled) return;
+  contentX += shapeVelX;
+  contentY += shapeVelY;
+  const {width, height} = getContentBounds();
+  if (contentX<width/2 || contentX>canvas.width-width/2) shapeVelX *= -1;
+  if (contentY<height/2 || contentY>canvas.height-height/2) shapeVelY *= -1;
+}
+
+/***************************************************
+ * animate()
+ ***************************************************/
+function animate(ts) {
+  if (!startTime) startTime = ts;
+  const elapsed = ts - startTime;
+
+  // If depth off & shape is selected, move shape
+  if (!useDepth && contentType==="shape") {
+    updateShapeMovement();
+    updateMask();
+  }
+
+  // If depth is a video, read the current frame
+  let depthMapData = null;
+  if (useDepth) {
+    if (depthSrcMode==="video" && depthVideo && !depthVideo.paused && !depthVideo.ended) {
+      depthCtx.drawImage(depthVideo, 0, 0, canvas.width, canvas.height);
+      depthMapData = depthCtx.getImageData(0,0, canvas.width, canvas.height).data;
+    }
+    else if (depthSrcMode==="image" && depthImageData) {
+      depthMapData = depthImageData; // static
+    }
+  }
+
+  // Scroll offsets
+  if (animationDirection==="vertical") {
+    backgroundOffset = (backgroundOffset + animationSpeed) % canvas.height;
+    foregroundOffset = (foregroundOffset - animationSpeed + canvas.height) % canvas.height;
+  } else {
+    backgroundOffset = (backgroundOffset + animationSpeed) % canvas.width;
+    foregroundOffset = (foregroundOffset - animationSpeed + canvas.width) % canvas.width;
+  }
+
+  // Build frame
+  const frame = ctx.createImageData(canvas.width, canvas.height);
+  const w = canvas.width, h = canvas.height;
+
+  for (let y=0; y<h; y++) {
+    for (let x=0; x<w; x++) {
+      const i = (y*w + x)*4;
+
+      // If useDepth is ON => single-layer noise, each pixel's offset scaled by depth
+      if (useDepth) {
+        let speedFactor = 1;
+        if (depthMapData) {
+          // Use average of RGB channels to get grayscale depth value
+          const r = depthMapData[i];
+          const g = depthMapData[i+1];
+          const b = depthMapData[i+2];
+          const depthVal = (r + g + b) / (3 * 255); // Normalize to [0..1]
+          speedFactor = 1 + depthVal * depthScale;
+        }
+        else {
+          // If no map yet, just do uniform
+          speedFactor = 1;
+        }
+
+        // Compute newX/newY based on direction
+        if (animationDirection==="vertical") {
+          const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
+          const srcIdx = newY*w + x;
+          // Check if we should show background color instead of noise
+          if (removeBackgroundNoise && depthMapData && depthMapData[i] < (depthThreshold * 2.55)) {
+            // Use the selected background color
+            const color = hexToRgb(backgroundColor);
+            frame.data[i+0] = color.r;
+            frame.data[i+1] = color.g;
+            frame.data[i+2] = color.b;
+          } else {
+            // Use noise
+            const val = backgroundNoise[srcIdx];
+            frame.data[i+0] = val;
+            frame.data[i+1] = val;
+            frame.data[i+2] = val;
+          }
+          frame.data[i+3] = 255;
+        } else {
+          const newX = Math.floor((x + backgroundOffset*speedFactor) % w);
+          const srcIdx = y*w + newX;
+          // Check if we should show background color instead of noise
+          if (removeBackgroundNoise && depthMapData && depthMapData[i] < (depthThreshold * 2.55)) {
+            // Use the selected background color
+            const color = hexToRgb(backgroundColor);
+            frame.data[i+0] = color.r;
+            frame.data[i+1] = color.g;
+            frame.data[i+2] = color.b;
+          } else {
+            // Use noise
+            const val = backgroundNoise[srcIdx];
+            frame.data[i+0] = val;
+            frame.data[i+1] = val;
+            frame.data[i+2] = val;
+          }
+          frame.data[i+3] = 255;
+        }
+      }
+      else {
+        // Depth is OFF => Opposing noise between mask foreground & background
+        const isFG = maskData && maskData[i+3]>0;
+        let bgIdx, fgIdx;
+        if (animationDirection==="vertical") {
+          const bgY = (y + backgroundOffset) % h;
+          const fgY = (y + foregroundOffset + h) % h;
+          bgIdx = Math.floor(bgY)*w + x;
+          fgIdx = Math.floor(fgY)*w + x;
+        } else {
+          const bgX = (x + backgroundOffset) % w;
+          const fgX = (x + foregroundOffset + w) % w;
+          bgIdx = y*w + bgX;
+          fgIdx = y*w + fgX;
+        }
+        
+        // If removeBackgroundNoise is true, use white for background
+        let val;
+        if (isFG) {
+          val = foregroundNoise[fgIdx];
+        } else {
+          val = removeBackgroundNoise ? 255 : backgroundNoise[bgIdx];
+        }
+        
+        if (removeBackgroundNoise && !isFG) {
+          // Use the selected background color
+          const color = hexToRgb(backgroundColor);
+          frame.data[i+0] = color.r;
+          frame.data[i+1] = color.g;
+          frame.data[i+2] = color.b;
+        } else {
+          // Use the noise value (black or white)
+          frame.data[i+0] = val;
+          frame.data[i+1] = val;
+          frame.data[i+2] = val;
+        }
+        frame.data[i+3] = 255;
+      }
+    }
+  }
+
+  ctx.putImageData(frame,0,0);
+
+  // Recording limit
+  if (!isPaused) {
+    if (isRecording && elapsed < recordDurationMs) {
+      animationFrame = requestAnimationFrame(animate);
+    } else if (isRecording) {
+      mediaRecorder.stop();
+      isRecording = false;
+      startTime = null;
+      document.getElementById('recordButton').textContent = 'Start Recording';
+      document.getElementById('recordButton').classList.remove('recording');
+    } else {
+      animationFrame = requestAnimationFrame(animate);
+    }
+  }
+}
+
+// Start
+updateMask();
+animate();
+
+/***************************************************
+ * Event Listeners
+ ***************************************************/
+
+// 1) Depth checkbox
+document.getElementById('useDepthMap').addEventListener('change', e => {
+  useDepth = e.target.checked;
+  backgroundOffset = 0;
+  foregroundOffset = 0;
+
+  // Enable/disable the Content UI if depth is used
+  const groupsToDisable = [
+    document.getElementById('contentTypeGroup'),
+    document.getElementById('textControls'),
+    document.getElementById('imageControls'),
+    document.getElementById('shapeControls'),
+    document.getElementById('fontSizeGroup'),
+  ];
+  if (useDepth) {
+    // disable them
+    groupsToDisable.forEach(g => g.classList.add('disabled'));
+    // Clear mask
+    maskData = null;
+    // Show depth threshold if removeBackgroundNoise is checked
+    document.getElementById('depthThresholdContainer').style.display = 
+      removeBackgroundNoise ? 'block' : 'none';
+  } else {
+    // re-enable
+    groupsToDisable.forEach(g => g.classList.remove('disabled'));
+    updateMask();
+    // Hide depth threshold
+    document.getElementById('depthThresholdContainer').style.display = 'none';
+  }
+});
+
+// 2) Depth scale
+document.getElementById('depthScaleInput').addEventListener('input', e => {
+  depthScale = parseFloat(e.target.value) || 2;
+});
+
+// 3) Depth Source
+const depthRadio = document.getElementsByName('depthSrc');
+depthRadio.forEach(r => {
+  r.addEventListener('change', e => {
+    depthSrcMode = e.target.value; // "image" or "video"
+  });
+});
+
+// 4) Depth Image
+document.getElementById('depthImageInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = new Image();
+    img.onload = () => {
+      // Draw the uploaded image to an offscreen canvas sized to main canvas
+      const tmpC = document.createElement('canvas');
+      tmpC.width = canvas.width;
+      tmpC.height = canvas.height;
+      const tmpCtx = tmpC.getContext('2d');
+      
+      // Clear with black background
+      tmpCtx.fillStyle = 'black';
+      tmpCtx.fillRect(0, 0, tmpC.width, tmpC.height);
+      
+      // Draw the image maintaining aspect ratio
+      const imgRatio = img.width / img.height;
+      const canvasRatio = tmpC.width / tmpC.height;
+      
+      let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+      
+      if (imgRatio > canvasRatio) {
+        // Image is wider than canvas (relative to height)
+        drawWidth = tmpC.width;
+        drawHeight = tmpC.width / imgRatio;
+        offsetY = (tmpC.height - drawHeight) / 2;
+      } else {
+        // Image is taller than canvas (relative to width)
+        drawHeight = tmpC.height;
+        drawWidth = tmpC.height * imgRatio;
+        offsetX = (tmpC.width - drawWidth) / 2;
+      }
+      
+      tmpCtx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      
+      // Get the image data and convert to grayscale if needed
+      const imageData = tmpCtx.getImageData(0, 0, tmpC.width, tmpC.height);
+      const data = imageData.data;
+      
+      // Process the image data to ensure we're using proper grayscale values
+      // This helps prevent outlines from showing
+      for (let i = 0; i < data.length; i += 4) {
+        // Convert to grayscale using luminance formula if it's not already grayscale
+        if (data[i] !== data[i+1] || data[i] !== data[i+2]) {
+          const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+          data[i] = data[i+1] = data[i+2] = Math.round(gray);
+        }
+      }
+      
+      // Put the processed data back
+      tmpCtx.putImageData(imageData, 0, 0);
+      depthImageData = tmpCtx.getImageData(0, 0, tmpC.width, tmpC.height).data;
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// 5) Depth Video
+document.getElementById('depthVideoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  depthVideo = document.createElement('video');
+  depthVideo.muted = true;
+  depthVideo.loop = true;
+  depthVideo.src = URL.createObjectURL(file);
+
+  depthCanvas = document.createElement('canvas');
+  depthCanvas.width = canvas.width;
+  depthCanvas.height = canvas.height;
+  depthCtx = depthCanvas.getContext('2d');
+
+  depthVideo.play().catch(err => {
+    console.warn("Depth video autoplay error:", err);
+  });
+});
+
+// 6) Content Type
+document.getElementById('contentType').addEventListener('change', e => {
+  contentType = e.target.value;
+  document.getElementById('textControls').style.display = (contentType==='text') ? 'flex' : 'none';
+  document.getElementById('imageControls').style.display = (contentType==='image') ? 'flex' : 'none';
+  document.getElementById('shapeControls').style.display = (contentType==='shape') ? 'flex' : 'none';
+
+  contentX = canvas.width/2;
+  contentY = canvas.height/2;
+  updateMask();
+});
+
+// 7) Text
+document.getElementById('textInput').addEventListener('input', e => {
+  currentText = e.target.value;
+  updateMask();
+});
+
+// 8) Foreground Image
+document.getElementById('imageInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      contentX = canvas.width/2;
+      contentY = canvas.height/2;
+      updateMask();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// 9) Shape controls
+document.getElementById('shapeType').addEventListener('change', e => {
+  shapeType = e.target.value;
+  updateMask();
+});
+document.getElementById('shapeSize').addEventListener('input', e => {
+  shapeSize = Math.max(10, +e.target.value);
+  updateMask();
+});
+document.getElementById('shapeSides').addEventListener('input', e => {
+  shapeSides = Math.max(3, +e.target.value);
+  updateMask();
+});
+document.getElementById('shapeMoveToggle').addEventListener('change', e => {
+  shapeMoveEnabled = e.target.checked;
+});
+
+// 10) Font size
+document.getElementById('fontSizeInput').addEventListener('input', e => {
+  fontSize = Math.max(10, +e.target.value);
+  updateMask();
+});
+
+// 11) Speed
+document.getElementById('speedInput').addEventListener('input', e => {
+  animationSpeed = +e.target.value || 2;
+});
+
+// 12) Background Noise density
+document.getElementById('bgDensityInput').addEventListener('input', e => {
+  const val = Math.max(0, Math.min(100, +e.target.value));
+  bgNoiseDensity = val/100;
+  refreshNoise();
+});
+
+// 12.1) Foreground Noise density
+document.getElementById('fgDensityInput').addEventListener('input', e => {
+  const val = Math.max(0, Math.min(100, +e.target.value));
+  fgNoiseDensity = val/100;
+  refreshNoise();
+});
+
+// 13) Remove Background Noise
+document.getElementById('removeBackgroundNoise').addEventListener('change', e => {
+  removeBackgroundNoise = e.target.checked;
+  document.getElementById('bgColorContainer').style.display = e.target.checked ? 'block' : 'none';
+  // Show depth threshold only when both removeBackgroundNoise and useDepth are true
+  document.getElementById('depthThresholdContainer').style.display = 
+    (e.target.checked && useDepth) ? 'block' : 'none';
+});
+
+// Background Color
+document.getElementById('bgColorPicker').addEventListener('input', e => {
+  backgroundColor = e.target.value;
+});
+
+// Depth Threshold
+document.getElementById('depthThreshold').addEventListener('input', e => {
+  depthThreshold = parseInt(e.target.value);
+});
+
+// 14) Speckle size
+document.getElementById('speckleSizeInput').addEventListener('input', e => {
+  speckleSize = Math.max(1, +e.target.value);
+  refreshNoise();
+});
+
+// 15) Pause
+document.getElementById('pauseButton').addEventListener('click', e => {
+  isPaused = !isPaused;
+  e.target.textContent = isPaused ? 'Resume' : 'Pause';
+  if (!isPaused) animate();
+});
+
+// 16) Random position
+document.getElementById('randomButton').addEventListener('click', () => {
+  const rx = Math.random()*canvas.width;
+  const ry = Math.random()*canvas.height;
+  const {width,height} = getContentBounds();
+  const {x,y} = constrainPosition(rx, ry, width, height);
+  contentX = x;
+  contentY = y;
+  updateMask();
+});
+
+// 17) Recording Duration
+document.getElementById('recordDurationInput').addEventListener('input', e => {
+  const secs = Math.max(1, +e.target.value);
+  recordDurationMs = secs*1000;
+});
+
+// 18) Start Recording
+document.getElementById('recordButton').addEventListener('click', () => {
+  if (isRecording) return;
+  
+  const secs = Math.max(1, +document.getElementById('recordDurationInput').value);
+  recordDurationMs = secs*1000;
+
+  const stream = canvas.captureStream(fps);
+  const opts = { mimeType:'video/webm; codecs=vp9', videoBitsPerSecond:8_000_000 };
+  try {
+    mediaRecorder = new MediaRecorder(stream, opts);
+  } catch {
+    mediaRecorder = new MediaRecorder(stream);
+  }
+
+  recordedChunks = [];
+  mediaRecorder.ondataavailable = e => { if (e.data.size>0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, {type:'video/webm'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'noise-animation.webm';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  isRecording = true;
+  startTime = null;
+  mediaRecorder.start();
+  document.getElementById('recordButton').textContent = 'Recording...';
+  document.getElementById('recordButton').classList.add('recording');
+});
+
+// 19) Direction
+document.addEventListener('DOMContentLoaded', () => {
+  const speedCtrl = document.getElementById('speedInput').parentElement;
+  const dirCtrl = document.createElement('div');
+  dirCtrl.className = 'control-group';
+  dirCtrl.innerHTML = `
+    <label for="directionInput">Direction</label>
+    <select id="directionInput">
+      <option value="vertical">Vertical</option>
+      <option value="horizontal">Horizontal</option>
+    </select>
+  `;
+  speedCtrl.parentNode.insertBefore(dirCtrl, speedCtrl.nextSibling);
+
+  document.getElementById('directionInput').addEventListener('change', e => {
+    animationDirection = e.target.value;
+    backgroundOffset = 0;
+    foregroundOffset = 0;
+  });
+});
+
+// Helper function to convert hex color to RGB
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : {r: 255, g: 255, b: 255};
+}
+</script>
+</body>
+</html>
