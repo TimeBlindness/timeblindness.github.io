@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Blindness: Why Video-Language Models Can’t See What Humans Can?</title>
+  <title>Time Blindness: Why Video-Language Models Can't See What Humans Can?</title>
   <style>
     :root {
-      --bg-color: #0f0f0f;
+      --bg-color: #0a0a0a;
       --text-color: #f5f5f5;
       --accent-color: #3a86ff;
       --secondary-color: #8338ec;
       --section-bg: #1a1a1a;
       --border-color: #333;
+      --gradient: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     * {
@@ -22,57 +24,141 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background-color: var(--bg-color);
+      background: var(--bg-color);
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(58, 134, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(131, 56, 236, 0.1) 0%, transparent 50%);
       color: var(--text-color);
       line-height: 1.6;
-      padding: 2rem;
-      max-width: 1200px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 0 2rem;
     }
     
     header {
-      margin-bottom: 3rem;
       text-align: center;
+      padding: 4rem 0;
+      margin-bottom: 2rem;
     }
     
     h1 {
-      font-size: 2.5rem;
+      font-size: clamp(2rem, 5vw, 3.5rem);
       font-weight: 700;
-      margin-bottom: 1rem;
-      background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+      margin-bottom: 1.5rem;
+      background: var(--gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1.2;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      color: #aaa;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      background: var(--gradient);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: var(--card-shadow);
+      margin-top: 1rem;
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(58, 134, 255, 0.4);
     }
     
     h2 {
-      font-size: 1.8rem;
-      margin: 2rem 0 1rem;
+      font-size: 2rem;
+      margin: 3rem 0 1.5rem;
       color: var(--accent-color);
+      text-align: center;
     }
     
     p {
       margin-bottom: 1.5rem;
       font-size: 1.1rem;
+      color: #ccc;
+    }
+    
+    .video-showcase {
+      margin: 4rem 0;
+    }
+    
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .video-card {
+      background: var(--section-bg);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .video-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .video-card h3 {
+      color: var(--accent-color);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+    
+    .video-card video {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      background: #000;
+    }
+    
+    .video-description {
+      color: #bbb;
+      font-size: 0.95rem;
+      line-height: 1.5;
     }
     
     .diagram-container {
       display: flex;
       flex-direction: column;
       gap: 3rem;
-      margin: 2rem 0;
+      margin: 3rem 0;
     }
     
     .diagram {
-      background-color: var(--section-bg);
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      background: var(--section-bg);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: var(--card-shadow);
       position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .diagram-title {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       margin-bottom: 1.5rem;
       color: var(--accent-color);
       font-weight: 600;
@@ -91,9 +177,16 @@
       min-width: 200px;
       background: rgba(255, 255, 255, 0.05);
       padding: 1.5rem;
-      border-radius: 8px;
+      border-radius: 12px;
       text-align: center;
       position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .flow-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
     }
     
     .flow-item::after {
@@ -112,26 +205,42 @@
     
     .comparison {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 2rem;
       margin-top: 2rem;
     }
     
     .comparison-item {
       background: rgba(255, 255, 255, 0.05);
-      padding: 1.5rem;
-      border-radius: 8px;
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .comparison-item:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
     
     .comparison-title {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       margin-bottom: 1rem;
       color: var(--accent-color);
       font-weight: 500;
     }
     
+    .comparison-item ul {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+    }
+    
+    .comparison-item li {
+      margin-bottom: 0.5rem;
+      color: #ddd;
+    }
+    
     .icon {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin-bottom: 1rem;
       color: var(--accent-color);
     }
@@ -149,22 +258,29 @@
       min-width: 250px;
       background: rgba(255, 255, 255, 0.05);
       padding: 1.5rem;
-      border-radius: 8px;
+      border-radius: 12px;
       text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .depth-item:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
     
     .depth-img {
       width: 100%;
       height: auto;
-      border-radius: 6px;
+      border-radius: 8px;
       margin-bottom: 1rem;
-      background: #333;
+      background: #222;
       aspect-ratio: 16/9;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.9rem;
       color: #888;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .key-points {
@@ -173,22 +289,37 @@
     
     .point {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
       align-items: flex-start;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .point:hover {
+      background: rgba(255, 255, 255, 0.06);
     }
     
     .point-number {
-      background: var(--accent-color);
+      background: var(--gradient);
       color: white;
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+    
+    .point h3 {
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
     }
     
     footer {
@@ -196,22 +327,25 @@
       text-align: center;
       color: #777;
       font-size: 0.9rem;
+      padding: 2rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .code-snippet {
-      background: #222;
-      padding: 1rem;
-      border-radius: 6px;
-      font-family: monospace;
+      background: #111;
+      padding: 1.5rem;
+      border-radius: 8px;
+      font-family: 'Fira Code', monospace;
       margin: 1rem 0;
       overflow-x: auto;
       font-size: 0.9rem;
       border-left: 3px solid var(--accent-color);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     @media (max-width: 768px) {
-      body {
-        padding: 1rem;
+      .container {
+        padding: 0 1rem;
       }
       
       .flow-diagram {
@@ -225,137 +359,258 @@
         bottom: -1.5rem;
         transform: translateX(50%);
       }
+      
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Time Blindness: Why Video-Language Models Can’t See What Humans Can?</h1>
-    <p>A visual explanation of how the noise animation system works with depth maps to create dynamic visual effects.</p>
-  </header>
-  
-  <div class="diagram-container">
-    <section class="diagram">
-      <h2 class="diagram-title">Basic Concept</h2>
-      <p>The system creates animated noise patterns that can interact with text, shapes, or images. When depth maps are used, the noise animation speed varies based on the brightness of each pixel in the depth map.</p>
-      
-      <div class="flow-diagram">
-        <div class="flow-item">
-          <div class="icon">📊</div>
-          <h3>Noise Generation</h3>
-          <p>Binary noise patterns are generated for both foreground and background</p>
+  <div class="container">
+    <header class="fade-in">
+      <h1>Time Blindness: Why Video-Language Models Can't See What Humans Can?</h1>
+      <p class="subtitle">Explore how noise animation systems create dynamic visual effects through depth maps and sophisticated masking techniques.</p>
+      <a href="generate.html" class="cta-button">🎨 Try the Animation Studio</a>
+    </header>
+    
+    <section class="video-showcase fade-in">
+      <h2>Examples from Our Collection</h2>
+      <div class="video-grid">
+        <div class="video-card">
+          <h3>📝 Word Animations</h3>
+          <video controls loop muted>
+            <source src="assets/words/1b3df5a029af.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p class="video-description">Text-based animations where noise patterns create dynamic visual effects around words and typography.</p>
         </div>
-        <div class="flow-item">
-          <div class="icon">🔄</div>
-          <h3>Animation</h3>
-          <p>Noise patterns scroll in opposite directions</p>
+        
+        <div class="video-card">
+          <h3>🔷 Shape Animations</h3>
+          <video controls loop muted>
+            <source src="assets/shapes/08ab8fdbbe48.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p class="video-description">Geometric shapes interacting with animated noise to create mesmerizing patterns and depth effects.</p>
         </div>
-        <div class="flow-item">
-          <div class="icon">🎭</div>
-          <h3>Masking</h3>
-          <p>Content (text/shape/image) creates a mask to separate foreground and background</p>
+        
+        <div class="video-card">
+          <h3>🖼️ Image Animations</h3>
+          <video controls loop muted>
+            <source src="assets/images/01fd4aa5faba.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p class="video-description">Complex images enhanced with depth-based noise animation to simulate motion parallax.</p>
+        </div>
+        
+        <div class="video-card">
+          <h3>🎬 Video Effects</h3>
+          <video controls loop muted>
+            <source src="assets/videos/4e28a735ca87.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p class="video-description">Advanced video processing with dynamic noise overlays and depth-based animation control.</p>
         </div>
       </div>
     </section>
     
-    <section class="diagram">
-      <h2 class="diagram-title">Two Operating Modes</h2>
+    <div class="diagram-container">
+      <section class="diagram fade-in">
+        <h2 class="diagram-title">🔧 Basic Concept</h2>
+        <p>The system creates animated noise patterns that can interact with text, shapes, or images. When depth maps are used, the noise animation speed varies based on the brightness of each pixel in the depth map.</p>
+        
+        <div class="flow-diagram">
+          <div class="flow-item">
+            <div class="icon">📊</div>
+            <h3>Noise Generation</h3>
+            <p>Binary noise patterns are generated for both foreground and background</p>
+          </div>
+          <div class="flow-item">
+            <div class="icon">🔄</div>
+            <h3>Animation</h3>
+            <p>Noise patterns scroll in opposite directions</p>
+          </div>
+          <div class="flow-item">
+            <div class="icon">🎭</div>
+            <h3>Masking</h3>
+            <p>Content (text/shape/image) creates a mask to separate foreground and background</p>
+          </div>
+        </div>
+      </section>
       
-      <div class="comparison">
-        <div class="comparison-item">
-          <h3 class="comparison-title">Standard Mode</h3>
-          <p>Without depth map, the system uses a binary mask:</p>
-          <ul>
-            <li>Text, shape, or image creates a mask</li>
-            <li>Foreground noise scrolls in one direction</li>
-            <li>Background noise scrolls in opposite direction</li>
-            <li>Creates visual separation between content and background</li>
-          </ul>
-          <div class="code-snippet">
-            // Standard mode (no depth map)
-            const isFG = maskData && maskData[i+3] > 0;
-            let val;
-            if (isFG) {
-              val = foregroundNoise[fgIdx];
-            } else {
-              val = backgroundNoise[bgIdx];
-            }
+      <section class="diagram fade-in">
+        <h2 class="diagram-title">⚙️ Two Operating Modes</h2>
+        
+        <div class="comparison">
+          <div class="comparison-item">
+            <h3 class="comparison-title">Standard Mode</h3>
+            <p>Without depth map, the system uses a binary mask:</p>
+            <ul>
+              <li>Text, shape, or image creates a mask</li>
+              <li>Foreground noise scrolls in one direction</li>
+              <li>Background noise scrolls in opposite direction</li>
+              <li>Creates visual separation between content and background</li>
+            </ul>
+            <div class="code-snippet">
+// Standard mode (no depth map)
+const isFG = maskData && maskData[i+3] > 0;
+let val;
+if (isFG) {
+  val = foregroundNoise[fgIdx];
+} else {
+  val = backgroundNoise[bgIdx];
+}
+            </div>
+          </div>
+          
+          <div class="comparison-item">
+            <h3 class="comparison-title">Depth Map Mode</h3>
+            <p>With depth map enabled:</p>
+            <ul>
+              <li>Single noise layer is used</li>
+              <li>Depth map controls animation speed at each pixel</li>
+              <li>Brighter areas in depth map = faster animation</li>
+              <li>Creates illusion of depth through motion parallax</li>
+            </ul>
+            <div class="code-snippet">
+// Depth map mode
+if (depthMapData) {
+  const d = depthMapData[i];
+  const depthVal = d / 255;
+  speedFactor = 1 + depthVal * depthScale;
+}
+const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section class="diagram fade-in">
+        <h2 class="diagram-title">🗺️ Depth Map Visualization</h2>
+        <p>The depth map controls how fast the noise animates at each pixel. Brighter areas in the depth map represent "closer" objects and animate faster.</p>
+        
+        <div class="depth-example">
+          <div class="depth-item">
+            <div class="depth-img">Depth Map Image (Grayscale)</div>
+            <p>Brightness represents depth - white is "close", black is "far"</p>
+          </div>
+          <div class="depth-item">
+            <div class="depth-img">Resulting Animation</div>
+            <p>Noise scrolls at different speeds based on depth values</p>
+          </div>
+        </div>
+      </section>
+      
+      <section class="key-points fade-in">
+        <h2>🔑 Key Technical Components</h2>
+        
+        <div class="point">
+          <div class="point-number">1</div>
+          <div>
+            <h3>Noise Generation</h3>
+            <p>Binary noise patterns (black/white pixels) are generated with controllable density and speckle size. These patterns are scrolled to create animation.</p>
           </div>
         </div>
         
-        <div class="comparison-item">
-          <h3 class="comparison-title">Depth Map Mode</h3>
-          <p>With depth map enabled:</p>
-          <ul>
-            <li>Single noise layer is used</li>
-            <li>Depth map controls animation speed at each pixel</li>
-            <li>Brighter areas in depth map = faster animation</li>
-            <li>Creates illusion of depth through motion parallax</li>
-          </ul>
-          <div class="code-snippet">
-            // Depth map mode
-            if (depthMapData) {
-              const d = depthMapData[i];
-              const depthVal = d / 255;
-              speedFactor = 1 + depthVal * depthScale;
-            }
-            const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
+        <div class="point">
+          <div class="point-number">2</div>
+          <div>
+            <h3>Content Masking</h3>
+            <p>In standard mode, text, shapes, or images create a binary mask that determines which noise pattern (foreground or background) is displayed at each pixel.</p>
           </div>
         </div>
-      </div>
-    </section>
+        
+        <div class="point">
+          <div class="point-number">3</div>
+          <div>
+            <h3>Depth-Based Animation</h3>
+            <p>When depth map is enabled, the brightness of each pixel in the depth map controls how fast the noise animates at that position, creating a parallax effect.</p>
+          </div>
+        </div>
+        
+        <div class="point">
+          <div class="point-number">4</div>
+          <div>
+            <h3>Background Color Option</h3>
+            <p>The "Remove Background Noise" option replaces noise with a solid color in background areas or in areas below a certain depth threshold.</p>
+          </div>
+        </div>
+      </section>
+    </div>
     
-    <section class="diagram">
-      <h2 class="diagram-title">Depth Map Visualization</h2>
-      <p>The depth map controls how fast the noise animates at each pixel. Brighter areas in the depth map represent "closer" objects and animate faster.</p>
-      
-      <div class="depth-example">
-        <div class="depth-item">
-          <div class="depth-img">Depth Map Image (Grayscale)</div>
-          <p>Brightness represents depth - white is "close", black is "far"</p>
-        </div>
-        <div class="depth-item">
-          <div class="depth-img">Resulting Animation</div>
-          <p>Noise scrolls at different speeds based on depth values</p>
-        </div>
-      </div>
-    </section>
-    
-    <section class="key-points">
-      <h2>Key Technical Components</h2>
-      
-      <div class="point">
-        <div class="point-number">1</div>
-        <div>
-          <h3>Noise Generation</h3>
-          <p>Binary noise patterns (black/white pixels) are generated with controllable density and speckle size. These patterns are scrolled to create animation.</p>
-        </div>
-      </div>
-      
-      <div class="point">
-        <div class="point-number">2</div>
-        <div>
-          <h3>Content Masking</h3>
-          <p>In standard mode, text, shapes, or images create a binary mask that determines which noise pattern (foreground or background) is displayed at each pixel.</p>
-        </div>
-      </div>
-      
-      <div class="point">
-        <div class="point-number">3</div>
-        <div>
-          <h3>Depth-Based Animation</h3>
-          <p>When depth map is enabled, the brightness of each pixel in the depth map controls how fast the noise animates at that position, creating a parallax effect.</p>
-        </div>
-      </div>
-      
-      <div class="point">
-        <div class="point-number">4</div>
-        <div>
-          <h3>Background Color Option</h3>
-          <p>The "Remove Background Noise" option replaces noise with a solid color in background areas or in areas below a certain depth threshold.</p>
-        </div>
-      </div>
-    </section>
+    <footer>
+      <p>&copy; 2024 Time Blindness Research Project. Exploring the intersection of visual perception and machine learning.</p>
+    </footer>
   </div>
+
+  <script>
+    // Add fade-in animation on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Initially hide elements
+    document.querySelectorAll('.fade-in').forEach((el, index) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      el.style.transitionDelay = `${index * 0.1}s`;
+      observer.observe(el);
+    });
+
+    // Auto-play videos when they come into view
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          video.play().catch(() => {
+            // Handle autoplay restrictions
+            console.log('Autoplay prevented for video');
+          });
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('video').forEach(video => {
+      videoObserver.observe(video);
+      
+      // Set video properties
+      video.muted = true;
+      video.loop = true;
+      video.setAttribute('playsinline', '');
+    });
+  </script>
 </body>
 </html> 

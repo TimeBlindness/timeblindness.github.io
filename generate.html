@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Noise Animation Studio</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      overflow-x: auto;
+    }
+
+    .header {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, #4facfe, #00f2fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: #aaa;
+      font-size: 1.1rem;
+    }
+
+    .main-container {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 2rem;
+      padding: 2rem;
+      min-height: calc(100vh - 200px);
+    }
+
+    .controls-panel {
+      background: rgba(30, 30, 30, 0.8);
+      backdrop-filter: blur(15px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      height: fit-content;
+      max-height: calc(100vh - 250px);
+      overflow-y: auto;
+    }
+
+    .controls-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .controls-panel::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .controls-panel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .control-section {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .control-section:last-child {
+      border-bottom: none;
+    }
+
+    .section-header {
+      padding: 1rem 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #4facfe;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-header::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .section-header.collapsed::after {
+      transform: rotate(-90deg);
+    }
+
+    .section-content {
+      padding: 1.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .section-content.collapsed {
+      display: none;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: #ccc;
+      font-weight: 500;
+    }
+
+    input, select, button {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #4facfe;
+      background: rgba(79, 172, 254, 0.1);
+      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+    }
+
+    input[type="range"] {
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+
+    input[type="range"]::-webkit-slider-track {
+      background: rgba(255, 255, 255, 0.2);
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4facfe;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 0.5rem;
+    }
+
+    input[type="radio"] {
+      width: auto;
+      margin-right: 0.3rem;
+    }
+
+    button {
+      background: linear-gradient(45deg, #4facfe, #00f2fe);
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    button.record {
+      background: linear-gradient(45deg, #ff6b6b, #ffa500);
+    }
+
+    button.record.recording {
+      background: linear-gradient(45deg, #51cf66, #40c057);
+    }
+
+    .canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    canvas {
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      max-width: 100%;
+      height: auto;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    canvas:hover {
+      border-color: rgba(79, 172, 254, 0.5);
+      box-shadow: 0 25px 80px rgba(79, 172, 254, 0.2);
+    }
+
+    .value-display {
+      background: rgba(79, 172, 254, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      min-width: 35px;
+      text-align: center;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+
+    .radio-group label:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      opacity: 0;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 0.6rem 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-input-wrapper:hover .file-input-label {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #4facfe;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff6b6b;
+      margin-left: auto;
+    }
+
+    .status-indicator.active {
+      background: #51cf66;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    @media (max-width: 1200px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .controls-panel {
+        max-height: none;
+        order: 2;
+      }
+    }
+
+    .small-text {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 0.25rem;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Advanced Noise Animation Studio</h1>
+    <p>Create dynamic noise animations with depth mapping, text, shapes, and images</p>
+  </div>
+
+  <div class="main-container">
+    <div class="controls-panel">
+      <!-- Depth Mapping Section -->
+      <div class="control-section">
+        <div class="section-header" onclick="toggleSection('depth')">
+          Depth Mapping
+          <div class="status-indicator" id="depthStatus"></div>
+        </div>
+        <div class="section-content" id="depthContent">
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="useDepthMap">
+              Enable Advanced Depth Processing
+            </label>
+            <div class="small-text">Uses sophisticated depth analysis for realistic movement</div>
+          </div>
+
+          <div class="control-group" id="depthSourceGroup" style="display: none;">
+            <label>Depth Source</label>
+            <div class="radio-group">
+              <label><input type="radio" name="depthSource" value="image" checked> Image</label>
+              <label><input type="radio" name="depthSource" value="video"> Video</label>
+            </div>
+          </div>
+
+          <div class="control-group" id="depthImageGroup">
+            <label>Depth Map Image</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="depthImageInput" accept="image/*">
+              <div class="file-input-label">Choose Image</div>
+            </div>
+          </div>
+
+          <div class="control-group" id="depthVideoGroup" style="display: none;">
+            <label>Depth Map Video</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="depthVideoInput" accept="video/*">
+              <div class="file-input-label">Choose Video</div>
+            </div>
+          </div>
+
+          <div class="control-group" id="depthAdvancedControls" style="display: none;">
+            <label>Foreground Speed (px/sec)</label>
+            <input type="number" id="foregroundSpeed" value="60" min="1" max="300">
+
+            <label>Foreground Threshold (Lower)</label>
+            <div class="control-row">
+              <input type="range" id="lowerThreshold" value="128" min="0" max="255" step="1">
+              <div class="value-display" id="lowerThresholdValue">128</div>
+            </div>
+
+            <label>Foreground Threshold (Upper)</label>
+            <div class="control-row">
+              <input type="range" id="upperThreshold" value="255" min="0" max="255" step="1">
+              <div class="value-display" id="upperThresholdValue">255</div>
+            </div>
+
+            <label>Edge Detection Threshold</label>
+            <div class="control-row">
+              <input type="range" id="edgeThreshold" value="30" min="0" max="100" step="1">
+              <div class="value-display" id="edgeThresholdValue">30</div>
+            </div>
+          </div>
+
+          <div class="control-group" id="depthBasicControls">
+            <label>Depth Scale</label>
+            <input type="number" id="depthScale" value="2" step="0.1" min="0.1" max="10">
+            <div class="small-text">Multiplier for depth-based movement speed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Section -->
+      <div class="control-section">
+        <div class="section-header" onclick="toggleSection('content')">
+          Content
+          <div class="status-indicator" id="contentStatus"></div>
+        </div>
+        <div class="section-content" id="contentContent">
+          <div class="control-group">
+            <label>Content Type</label>
+            <select id="contentType">
+              <option value="text">Text</option>
+              <option value="image">Image</option>
+              <option value="shape">Shape</option>
+            </select>
+          </div>
+
+          <div class="control-group" id="textControls">
+            <label>Text Content</label>
+            <input type="text" id="textInput" value="NOISE" placeholder="Enter text...">
+            
+            <label>Font Size (%)</label>
+            <input type="number" id="fontSize" value="30" min="5" max="100">
+          </div>
+
+          <div class="control-group" id="imageControls" style="display: none;">
+            <label>Foreground Image</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="imageInput" accept="image/*">
+              <div class="file-input-label">Choose Image</div>
+            </div>
+          </div>
+
+          <div class="control-group" id="shapeControls" style="display: none;">
+            <label>Shape Type</label>
+            <select id="shapeType">
+              <option value="rectangle">Rectangle</option>
+              <option value="circle">Circle</option>
+              <option value="polygon">Polygon</option>
+            </select>
+
+            <label>Size (px)</label>
+            <input type="number" id="shapeSize" value="100" min="10" max="500">
+
+            <div id="polygonSides" style="display: none;">
+              <label>Polygon Sides</label>
+              <input type="number" id="shapeSides" value="5" min="3" max="12">
+            </div>
+
+            <label>
+              <input type="checkbox" id="shapeMoveToggle">
+              Enable Shape Movement
+            </label>
+          </div>
+
+          <div class="control-group">
+            <button id="randomPosition" class="secondary">Random Position</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animation Section -->
+      <div class="control-section">
+        <div class="section-header" onclick="toggleSection('animation')">
+          Animation
+          <div class="status-indicator active" id="animationStatus"></div>
+        </div>
+        <div class="section-content" id="animationContent">
+          <div class="control-group">
+            <label>Movement Direction</label>
+            <select id="movementDirection">
+              <option value="vertical">Vertical</option>
+              <option value="horizontal">Horizontal</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>Animation Speed</label>
+            <input type="number" id="animationSpeed" value="2" step="0.5" min="0.1" max="20">
+          </div>
+
+          <div class="control-group">
+            <label>Background Noise Density (%)</label>
+            <div class="control-row">
+              <input type="range" id="bgNoiseDensity" value="50" min="0" max="100">
+              <div class="value-display" id="bgNoiseDensityValue">50</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>Foreground Noise Density (%)</label>
+            <div class="control-row">
+              <input type="range" id="fgNoiseDensity" value="50" min="0" max="100">
+              <div class="value-display" id="fgNoiseDensityValue">50</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>Speckle Size (px)</label>
+            <input type="number" id="speckleSize" value="3" min="1" max="20">
+          </div>
+
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="removeBackgroundNoise">
+              Replace Background with Solid Color
+            </label>
+            
+            <div id="backgroundColorGroup" style="display: none;">
+              <label>Background Color</label>
+              <input type="color" id="backgroundColor" value="#ffffff">
+              
+              <div id="depthThresholdGroup" style="display: none;">
+                <label>Depth Cutoff Threshold</label>
+                <div class="control-row">
+                  <input type="range" id="depthThreshold" value="5" min="0" max="100">
+                  <div class="value-display" id="depthThresholdValue">5</div>
+                </div>
+                <div class="small-text">Lower values = more background area</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-row">
+              <button id="pauseButton" class="secondary">Pause</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recording Section -->
+      <div class="control-section">
+        <div class="section-header" onclick="toggleSection('recording')">
+          Recording
+          <div class="status-indicator" id="recordingStatus"></div>
+        </div>
+        <div class="section-content" id="recordingContent">
+          <div class="control-group">
+            <label>Record Duration (seconds)</label>
+            <input type="number" id="recordDuration" value="5" min="1" max="60">
+          </div>
+
+          <div class="control-group">
+            <button id="recordButton" class="record">Start Recording</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="noiseCanvas" width="960" height="540"></canvas>
+    </div>
+  </div>
+
+  <!-- Hidden elements -->
+  <video id="depthVideo" style="display: none;" loop muted></video>
+
+  <script>
+    // === Global State ===
+    const canvas = document.getElementById('noiseCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Animation state
+    let isPaused = false;
+    let animationFrameId = null;
+    let startTime = null;
+
+    // Depth state
+    let useAdvancedDepth = false;
+    let depthSource = 'image';
+    let depthImageData = null;
+    let depthVideo = null;
+    let depthCanvas = null;
+    let depthCtx = null;
+    let depthScale = 2;
+
+    // Advanced depth parameters (from depth.html)
+    let foregroundSpeed = 60;
+    let lowerThreshold = 128;
+    let upperThreshold = 255;
+    let edgeThreshold = 30;
+
+    // Content state
+    let contentType = 'text';
+    let currentText = 'NOISE';
+    let currentImage = null;
+    let fontSize = 30;
+    let shapeType = 'rectangle';
+    let shapeSize = 100;
+    let shapeSides = 5;
+    let shapeMoveEnabled = false;
+    let contentX = width / 2;
+    let contentY = height / 2;
+    let shapeVelX = 2;
+    let shapeVelY = 2;
+
+    // Animation parameters
+    let movementDirection = 'vertical';
+    let animationSpeed = 2;
+    let bgNoiseDensity = 0.5;
+    let fgNoiseDensity = 0.5;
+    let speckleSize = 3;
+    let removeBackgroundNoise = false;
+    let backgroundColor = '#ffffff';
+    let depthThreshold = 5;
+
+    // Noise arrays
+    let backgroundNoise = [];
+    let foregroundNoise = [];
+    let noiseField = new Uint8ClampedArray(width * height); // For advanced depth mode
+    let maskData = null;
+
+    // Animation offsets
+    let backgroundOffset = 0;
+    let foregroundOffset = 0;
+
+    // Recording state
+    let isRecording = false;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+
+    // === Helper Functions ===
+    function toggleSection(sectionId) {
+      const header = document.querySelector(`#${sectionId}Content`).previousElementSibling;
+      const content = document.getElementById(`${sectionId}Content`);
+      const isCollapsed = content.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        content.classList.remove('collapsed');
+        header.classList.remove('collapsed');
+      } else {
+        content.classList.add('collapsed');
+        header.classList.add('collapsed');
+      }
+    }
+
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 255, g: 255, b: 255 };
+    }
+
+    // === Noise Generation ===
+    function generateBinaryNoise(array, densityValue) {
+      array.fill(0);
+      for (let y = 0; y < height; y += speckleSize) {
+        for (let x = 0; x < width; x += speckleSize) {
+          const val = Math.random() > densityValue ? 255 : 0;
+          for (let dy = 0; dy < speckleSize && (y + dy) < height; dy++) {
+            for (let dx = 0; dx < speckleSize && (x + dx) < width; dx++) {
+              const idx = (y + dy) * width + (x + dx);
+              array[idx] = val;
+            }
+          }
+        }
+      }
+    }
+
+    function generateSeamlessNoise() {
+      // Generate noise field for advanced depth mode
+      for (let y = 0; y < height; y += speckleSize) {
+        for (let x = 0; x < width; x += speckleSize) {
+          const value = (Math.random() * 100 < (100 - bgNoiseDensity * 100)) ? 255 : 0;
+          for (let dy = 0; dy < speckleSize && (y + dy) < height; dy++) {
+            for (let dx = 0; dx < speckleSize && (x + dx) < width; dx++) {
+              noiseField[(y + dy) * width + (x + dx)] = value;
+            }
+          }
+        }
+      }
+
+      // Make seamlessly tile
+      if (movementDirection === 'vertical') {
+        for (let y = 0; y < speckleSize; y++) {
+          const destY = height - speckleSize + y;
+          if (destY < height) {
+            for (let x = 0; x < width; x++) {
+              noiseField[destY * width + x] = noiseField[y * width + x];
+            }
+          }
+        }
+      } else {
+        for (let x = 0; x < speckleSize; x++) {
+          const destX = width - speckleSize + x;
+          if (destX < width) {
+            for (let y = 0; y < height; y++) {
+              noiseField[y * width + destX] = noiseField[y * width + x];
+            }
+          }
+        }
+      }
+    }
+
+    function refreshNoise() {
+      backgroundNoise = new Array(width * height).fill(0);
+      foregroundNoise = new Array(width * height).fill(0);
+      generateBinaryNoise(backgroundNoise, bgNoiseDensity);
+      generateBinaryNoise(foregroundNoise, fgNoiseDensity);
+      generateSeamlessNoise();
+    }
+
+    // === Content Drawing ===
+    function wrapTextLines(ctx, text, maxWidth) {
+      const words = text.split(/\s+/);
+      const lines = [];
+      let line = "";
+      words.forEach(word => {
+        const testLine = line ? line + " " + word : word;
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = testLine;
+        }
+      });
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    function autoScaleFont(ctx, text) {
+      const minDim = Math.min(width, height);
+      let trySize = minDim * (fontSize / 100);
+      const maxWidth = width * 0.9;
+      const maxHeight = height * 0.9;
+      const lhFactor = 1.2;
+
+      for (; trySize >= 10; trySize--) {
+        ctx.font = `bold ${trySize}px sans-serif`;
+        const lines = wrapTextLines(ctx, text, maxWidth);
+        const totalH = lines.length * (trySize * lhFactor);
+        if (totalH <= maxHeight) return trySize;
+      }
+      return 10;
+    }
+
+    function drawShape(maskCtx, cx, cy) {
+      maskCtx.fillStyle = 'white';
+      maskCtx.beginPath();
+      if (shapeType === 'rectangle') {
+        maskCtx.rect(cx - shapeSize / 2, cy - shapeSize / 2, shapeSize, shapeSize);
+      } else if (shapeType === 'circle') {
+        maskCtx.arc(cx, cy, shapeSize / 2, 0, 2 * Math.PI);
+      } else if (shapeType === 'polygon') {
+        const sides = Math.max(3, shapeSides);
+        const r = shapeSize / 2;
+        for (let i = 0; i < sides; i++) {
+          const angle = (i / sides) * (2 * Math.PI);
+          const px = cx + r * Math.cos(angle);
+          const py = cy + r * Math.sin(angle);
+          if (i === 0) maskCtx.moveTo(px, py);
+          else maskCtx.lineTo(px, py);
+        }
+        maskCtx.closePath();
+      }
+      maskCtx.fill();
+    }
+
+    function updateMask() {
+      if (useAdvancedDepth) {
+        maskData = null;
+        return;
+      }
+
+      const mCanvas = document.createElement('canvas');
+      mCanvas.width = width;
+      mCanvas.height = height;
+      const mCtx = mCanvas.getContext('2d');
+      mCtx.clearRect(0, 0, width, height);
+
+      if (contentType === 'text') {
+        const finalSize = autoScaleFont(mCtx, currentText);
+        mCtx.font = `bold ${finalSize}px sans-serif`;
+        mCtx.fillStyle = 'white';
+        mCtx.textAlign = 'center';
+        mCtx.textBaseline = 'middle';
+
+        const maxWidth = width * 0.9;
+        const lineH = finalSize * 1.2;
+        const lines = wrapTextLines(mCtx, currentText, maxWidth);
+        const totalH = lines.length * lineH;
+        let startY = contentY - totalH / 2;
+        lines.forEach(line => {
+          mCtx.fillText(line, contentX, startY + lineH / 2);
+          startY += lineH;
+        });
+      } else if (contentType === 'image' && currentImage) {
+        const margin = 20;
+        const mw = width - margin * 2;
+        const mh = height - margin * 2;
+        const scale = Math.min(mw / currentImage.width, mh / currentImage.height, 1);
+        const dw = currentImage.width * scale;
+        const dh = currentImage.height * scale;
+        const dx = contentX - dw / 2;
+        const dy = contentY - dh / 2;
+        mCtx.drawImage(currentImage, dx, dy, dw, dh);
+      } else if (contentType === 'shape') {
+        drawShape(mCtx, contentX, contentY);
+      }
+
+      maskData = mCtx.getImageData(0, 0, width, height).data;
+    }
+
+    function updateShapeMovement() {
+      if (!shapeMoveEnabled) return;
+      contentX += shapeVelX;
+      contentY += shapeVelY;
+      
+      const halfSize = shapeSize / 2;
+      if (contentX < halfSize || contentX > width - halfSize) shapeVelX *= -1;
+      if (contentY < halfSize || contentY > height - halfSize) shapeVelY *= -1;
+    }
+
+    // === Animation Loop ===
+    function animate(timestamp) {
+      if (isPaused) {
+        animationFrameId = null;
+        return;
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+
+      if (!startTime) startTime = timestamp;
+      const elapsedSeconds = (timestamp - startTime) / 1000;
+
+      // Update shape movement if enabled
+      if (!useAdvancedDepth && contentType === 'shape') {
+        updateShapeMovement();
+        updateMask();
+      }
+
+      // Update depth frame if using video
+      let currentDepthData = null;
+      if ((useAdvancedDepth || depthImageData) && depthSource === 'video' && depthVideo && depthVideo.readyState >= 2) {
+        depthCtx.drawImage(depthVideo, 0, 0, width, height);
+        currentDepthData = depthCtx.getImageData(0, 0, width, height).data;
+      } else if (depthImageData) {
+        currentDepthData = depthImageData;
+      }
+
+      // Calculate offsets
+      if (useAdvancedDepth) {
+        // Advanced depth mode uses uniform foreground speed
+        const pixelsPerSecond = foregroundSpeed;
+        const totalOffset = pixelsPerSecond * elapsedSeconds;
+        const offset = movementDirection === 'vertical'
+          ? Math.floor(totalOffset) % height
+          : Math.floor(totalOffset) % width;
+
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            
+            let depth = 0;
+            if (currentDepthData) {
+              depth = currentDepthData[i];
+              
+              // Edge detection
+              if (depth >= lowerThreshold && depth <= upperThreshold) {
+                const neighbors = [];
+                if (x > 0) neighbors.push(currentDepthData[i - 4]);
+                if (x < width - 1) neighbors.push(currentDepthData[i + 4]);
+                if (y > 0) neighbors.push(currentDepthData[(y - 1) * width * 4 + x * 4]);
+                if (y < height - 1) neighbors.push(currentDepthData[(y + 1) * width * 4 + x * 4]);
+                
+                for (const neighborDepth of neighbors) {
+                  if (Math.abs(depth - neighborDepth) > edgeThreshold) {
+                    depth = 0;
+                    break;
+                  }
+                }
+              }
+            }
+
+            let offsetX = x;
+            let offsetY = y;
+
+            if (depth >= lowerThreshold && depth <= upperThreshold) {
+              if (movementDirection === 'vertical') {
+                offsetY = (y + offset) % height;
+              } else {
+                offsetX = (x + offset) % width;
+              }
+            }
+
+            const sampleIndex = offsetY * width + offsetX;
+            let noiseValue = noiseField[sampleIndex];
+
+            // Handle background color replacement
+            if (removeBackgroundNoise && currentDepthData && currentDepthData[i] < (depthThreshold * 2.55)) {
+              const color = hexToRgb(backgroundColor);
+              data[i + 0] = color.r;
+              data[i + 1] = color.g;
+              data[i + 2] = color.b;
+            } else {
+              data[i + 0] = noiseValue;
+              data[i + 1] = noiseValue;
+              data[i + 2] = noiseValue;
+            }
+            data[i + 3] = 255;
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+      } else {
+        // Standard mode with depth scale or mask-based
+        if (movementDirection === 'vertical') {
+          backgroundOffset = (backgroundOffset + animationSpeed) % height;
+          foregroundOffset = (foregroundOffset - animationSpeed + height) % height;
+        } else {
+          backgroundOffset = (backgroundOffset + animationSpeed) % width;
+          foregroundOffset = (foregroundOffset - animationSpeed + width) % width;
+        }
+
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            
+            let useDepthScaling = currentDepthData && !maskData;
+            
+            if (useDepthScaling) {
+              // Simple depth scaling mode
+              const r = currentDepthData[i];
+              const g = currentDepthData[i + 1];
+              const b = currentDepthData[i + 2];
+              const depthVal = (r + g + b) / (3 * 255);
+              const speedFactor = 1 + depthVal * depthScale;
+
+              let newX = x, newY = y;
+              if (movementDirection === 'vertical') {
+                newY = Math.floor((y + backgroundOffset * speedFactor) % height);
+              } else {
+                newX = Math.floor((x + backgroundOffset * speedFactor) % width);
+              }
+
+              const srcIdx = newY * width + newX;
+              
+              if (removeBackgroundNoise && currentDepthData[i] < (depthThreshold * 2.55)) {
+                const color = hexToRgb(backgroundColor);
+                data[i + 0] = color.r;
+                data[i + 1] = color.g;
+                data[i + 2] = color.b;
+              } else {
+                const val = backgroundNoise[srcIdx];
+                data[i + 0] = val;
+                data[i + 1] = val;
+                data[i + 2] = val;
+              }
+            } else {
+              // Mask-based mode
+              const isFG = maskData && maskData[i + 3] > 0;
+              let bgIdx, fgIdx;
+              
+              if (movementDirection === 'vertical') {
+                const bgY = (y + backgroundOffset) % height;
+                const fgY = (y + foregroundOffset + height) % height;
+                bgIdx = Math.floor(bgY) * width + x;
+                fgIdx = Math.floor(fgY) * width + x;
+              } else {
+                const bgX = (x + backgroundOffset) % width;
+                const fgX = (x + foregroundOffset + width) % width;
+                bgIdx = y * width + bgX;
+                fgIdx = y * width + fgX;
+              }
+
+              let val;
+              if (isFG) {
+                val = foregroundNoise[fgIdx];
+              } else {
+                val = removeBackgroundNoise ? 255 : backgroundNoise[bgIdx];
+              }
+
+              if (removeBackgroundNoise && !isFG) {
+                const color = hexToRgb(backgroundColor);
+                data[i + 0] = color.r;
+                data[i + 1] = color.g;
+                data[i + 2] = color.b;
+              } else {
+                data[i + 0] = val;
+                data[i + 1] = val;
+                data[i + 2] = val;
+              }
+            }
+            
+            data[i + 3] = 255;
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+      }
+
+      // Handle recording duration
+      if (isRecording && mediaRecorder && mediaRecorder.state === 'recording') {
+        const recordDurationMs = parseFloat(document.getElementById('recordDuration').value) * 1000;
+        if (timestamp - startTime >= recordDurationMs) {
+          stopRecording();
+        }
+      }
+    }
+
+    // === Event Listeners ===
+    
+    // Depth controls
+    document.getElementById('useDepthMap').addEventListener('change', (e) => {
+      useAdvancedDepth = e.target.checked;
+      document.getElementById('depthAdvancedControls').style.display = useAdvancedDepth ? 'block' : 'none';
+      document.getElementById('depthSourceGroup').style.display = useAdvancedDepth ? 'block' : 'none';
+      document.getElementById('depthStatus').classList.toggle('active', useAdvancedDepth);
+      
+      // Show/hide content controls
+      const contentGroups = ['contentTypeGroup', 'textControls', 'imageControls', 'shapeControls'];
+      contentGroups.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.classList.toggle('disabled', useAdvancedDepth);
+        }
+      });
+      
+      // Update depth threshold visibility
+      updateDepthThresholdVisibility();
+      
+      if (useAdvancedDepth) {
+        maskData = null;
+        refreshNoise();
+      } else {
+        updateMask();
+      }
+    });
+
+    document.querySelectorAll('input[name="depthSource"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        depthSource = e.target.value;
+        document.getElementById('depthImageGroup').style.display = depthSource === 'image' ? 'block' : 'none';
+        document.getElementById('depthVideoGroup').style.display = depthSource === 'video' ? 'block' : 'none';
+      });
+    });
+
+    document.getElementById('depthImageInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          const tmpC = document.createElement('canvas');
+          tmpC.width = width;
+          tmpC.height = height;
+          const tmpCtx = tmpC.getContext('2d');
+          
+          tmpCtx.fillStyle = 'black';
+          tmpCtx.fillRect(0, 0, tmpC.width, tmpC.height);
+          
+          const imgRatio = img.width / img.height;
+          const canvasRatio = tmpC.width / tmpC.height;
+          
+          let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+          
+          if (imgRatio > canvasRatio) {
+            drawWidth = tmpC.width;
+            drawHeight = tmpC.width / imgRatio;
+            offsetY = (tmpC.height - drawHeight) / 2;
+          } else {
+            drawHeight = tmpC.height;
+            drawWidth = tmpC.height * imgRatio;
+            offsetX = (tmpC.width - drawWidth) / 2;
+          }
+          
+          tmpCtx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+          
+          const imageData = tmpCtx.getImageData(0, 0, tmpC.width, tmpC.height);
+          const data = imageData.data;
+          
+          // Convert to grayscale if needed
+          for (let i = 0; i < data.length; i += 4) {
+            if (data[i] !== data[i + 1] || data[i] !== data[i + 2]) {
+              const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+              data[i] = data[i + 1] = data[i + 2] = Math.round(gray);
+            }
+          }
+          
+          tmpCtx.putImageData(imageData, 0, 0);
+          depthImageData = tmpCtx.getImageData(0, 0, tmpC.width, tmpC.height).data;
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('depthVideoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (depthVideo) {
+        URL.revokeObjectURL(depthVideo.src);
+      }
+
+      depthVideo = document.getElementById('depthVideo');
+      depthVideo.src = URL.createObjectURL(file);
+      depthVideo.play();
+
+      if (!depthCanvas) {
+        depthCanvas = document.createElement('canvas');
+        depthCanvas.width = width;
+        depthCanvas.height = height;
+        depthCtx = depthCanvas.getContext('2d');
+      }
+    });
+
+    // Advanced depth controls
+    document.getElementById('foregroundSpeed').addEventListener('input', (e) => {
+      foregroundSpeed = parseFloat(e.target.value) || 60;
+    });
+
+    document.getElementById('lowerThreshold').addEventListener('input', (e) => {
+      lowerThreshold = parseInt(e.target.value);
+      document.getElementById('lowerThresholdValue').textContent = lowerThreshold;
+      
+      if (lowerThreshold > upperThreshold) {
+        upperThreshold = lowerThreshold;
+        document.getElementById('upperThreshold').value = upperThreshold;
+        document.getElementById('upperThresholdValue').textContent = upperThreshold;
+      }
+    });
+
+    document.getElementById('upperThreshold').addEventListener('input', (e) => {
+      upperThreshold = parseInt(e.target.value);
+      document.getElementById('upperThresholdValue').textContent = upperThreshold;
+      
+      if (upperThreshold < lowerThreshold) {
+        lowerThreshold = upperThreshold;
+        document.getElementById('lowerThreshold').value = lowerThreshold;
+        document.getElementById('lowerThresholdValue').textContent = lowerThreshold;
+      }
+    });
+
+    document.getElementById('edgeThreshold').addEventListener('input', (e) => {
+      edgeThreshold = parseInt(e.target.value);
+      document.getElementById('edgeThresholdValue').textContent = edgeThreshold;
+    });
+
+    document.getElementById('depthScale').addEventListener('input', (e) => {
+      depthScale = parseFloat(e.target.value) || 2;
+    });
+
+    // Content controls
+    document.getElementById('contentType').addEventListener('change', (e) => {
+      contentType = e.target.value;
+      document.getElementById('textControls').style.display = contentType === 'text' ? 'block' : 'none';
+      document.getElementById('imageControls').style.display = contentType === 'image' ? 'block' : 'none';
+      document.getElementById('shapeControls').style.display = contentType === 'shape' ? 'block' : 'none';
+      document.getElementById('polygonSides').style.display = contentType === 'shape' && shapeType === 'polygon' ? 'block' : 'none';
+      
+      contentX = width / 2;
+      contentY = height / 2;
+      updateMask();
+      document.getElementById('contentStatus').classList.add('active');
+    });
+
+    document.getElementById('textInput').addEventListener('input', (e) => {
+      currentText = e.target.value;
+      updateMask();
+    });
+
+    document.getElementById('fontSize').addEventListener('input', (e) => {
+      fontSize = Math.max(5, parseInt(e.target.value));
+      updateMask();
+    });
+
+    document.getElementById('imageInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          currentImage = img;
+          contentX = width / 2;
+          contentY = height / 2;
+          updateMask();
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('shapeType').addEventListener('change', (e) => {
+      shapeType = e.target.value;
+      document.getElementById('polygonSides').style.display = shapeType === 'polygon' ? 'block' : 'none';
+      updateMask();
+    });
+
+    document.getElementById('shapeSize').addEventListener('input', (e) => {
+      shapeSize = Math.max(10, parseInt(e.target.value));
+      updateMask();
+    });
+
+    document.getElementById('shapeSides').addEventListener('input', (e) => {
+      shapeSides = Math.max(3, parseInt(e.target.value));
+      updateMask();
+    });
+
+    document.getElementById('shapeMoveToggle').addEventListener('change', (e) => {
+      shapeMoveEnabled = e.target.checked;
+    });
+
+    document.getElementById('randomPosition').addEventListener('click', () => {
+      contentX = Math.random() * width;
+      contentY = Math.random() * height;
+      updateMask();
+    });
+
+    // Animation controls
+    document.getElementById('movementDirection').addEventListener('change', (e) => {
+      movementDirection = e.target.value;
+      backgroundOffset = 0;
+      foregroundOffset = 0;
+      refreshNoise();
+    });
+
+    document.getElementById('animationSpeed').addEventListener('input', (e) => {
+      animationSpeed = parseFloat(e.target.value) || 2;
+    });
+
+    document.getElementById('bgNoiseDensity').addEventListener('input', (e) => {
+      const value = parseInt(e.target.value);
+      bgNoiseDensity = value / 100;
+      document.getElementById('bgNoiseDensityValue').textContent = value;
+      refreshNoise();
+    });
+
+    document.getElementById('fgNoiseDensity').addEventListener('input', (e) => {
+      const value = parseInt(e.target.value);
+      fgNoiseDensity = value / 100;
+      document.getElementById('fgNoiseDensityValue').textContent = value;
+      refreshNoise();
+    });
+
+    document.getElementById('speckleSize').addEventListener('input', (e) => {
+      speckleSize = Math.max(1, parseInt(e.target.value));
+      refreshNoise();
+    });
+
+    function updateDepthThresholdVisibility() {
+      const showDepthThreshold = removeBackgroundNoise && (useAdvancedDepth || depthImageData);
+      document.getElementById('depthThresholdGroup').style.display = showDepthThreshold ? 'block' : 'none';
+    }
+
+    document.getElementById('removeBackgroundNoise').addEventListener('change', (e) => {
+      removeBackgroundNoise = e.target.checked;
+      document.getElementById('backgroundColorGroup').style.display = removeBackgroundNoise ? 'block' : 'none';
+      updateDepthThresholdVisibility();
+    });
+
+    document.getElementById('backgroundColor').addEventListener('input', (e) => {
+      backgroundColor = e.target.value;
+    });
+
+    document.getElementById('depthThreshold').addEventListener('input', (e) => {
+      depthThreshold = parseInt(e.target.value);
+      document.getElementById('depthThresholdValue').textContent = depthThreshold;
+    });
+
+    document.getElementById('pauseButton').addEventListener('click', () => {
+      isPaused = !isPaused;
+      const button = document.getElementById('pauseButton');
+      button.textContent = isPaused ? 'Resume' : 'Pause';
+      document.getElementById('animationStatus').classList.toggle('active', !isPaused);
+      
+      if (!isPaused && !animationFrameId) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    });
+
+    // Recording controls
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+      isRecording = false;
+      document.getElementById('recordButton').textContent = 'Start Recording';
+      document.getElementById('recordButton').classList.remove('recording');
+      document.getElementById('recordingStatus').classList.remove('active');
+    }
+
+    document.getElementById('recordButton').addEventListener('click', () => {
+      if (isRecording) return;
+      
+      const durationSeconds = parseFloat(document.getElementById('recordDuration').value) || 5;
+      
+      const stream = canvas.captureStream(60);
+      recordedChunks = [];
+      
+      const options = { mimeType: 'video/webm; codecs=vp9', videoBitsPerSecond: 8000000 };
+      
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (err) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'noise-animation.webm';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      isRecording = true;
+      startTime = null;
+      mediaRecorder.start();
+      document.getElementById('recordButton').textContent = 'Recording...';
+      document.getElementById('recordButton').classList.add('recording');
+      document.getElementById('recordingStatus').classList.add('active');
+    });
+
+    // === Initialize ===
+    refreshNoise();
+    updateMask();
+    animate();
+
+    // Set initial content status
+    document.getElementById('contentStatus').classList.add('active');
+  </script>
+</body>
+</html> 
