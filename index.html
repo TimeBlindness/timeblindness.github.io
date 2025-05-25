@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Time Blindness: Why Video-Language Models Can't See What Humans Can?</title>
+  <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
+      /* Dark theme (default) */
       --bg-color: #0a0a0a;
       --text-color: #f5f5f5;
       --accent-color: #3a86ff;
@@ -14,6 +17,20 @@
       --border-color: #333;
       --gradient: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
       --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --author-text: #ccc;
+    }
+    
+    [data-theme="light"] {
+      /* Light theme */
+      --bg-color: #ffffff;
+      --text-color: #2c2c2c;
+      --accent-color: #2563eb;
+      --secondary-color: #7c3aed;
+      --section-bg: #f8fafc;
+      --border-color: #e2e8f0;
+      --gradient: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      --author-text: #64748b;
     }
     
     * {
@@ -31,6 +48,7 @@
       color: var(--text-color);
       line-height: 1.6;
       min-height: 100vh;
+      transition: all 0.3s ease;
     }
     
     .container {
@@ -39,9 +57,31 @@
       padding: 0 2rem;
     }
     
+    /* Theme toggle button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--gradient);
+      border: none;
+      border-radius: 50px;
+      padding: 12px 16px;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    }
+    
     header {
       text-align: center;
-      padding: 4rem 0;
+      padding: 4rem 0 2rem;
       margin-bottom: 2rem;
     }
     
@@ -56,9 +96,117 @@
       line-height: 1.2;
     }
     
+    .title-logo {
+      width: 60px;
+      height: 60px;
+    }
+    
+    /* Publication links section */
+    .publication-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .link-block a {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .external-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--section-bg);
+      color: var(--text-color);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .external-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      background: var(--gradient);
+      color: white;
+    }
+    
+    .external-link .icon {
+      font-size: 1.1rem;
+    }
+    
+    /* Authors section */
+    .authors-section {
+      text-align: center;
+      margin: 3rem 0;
+      padding: 2rem;
+      background: var(--section-bg);
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
+    }
+    
+    .authors-title {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+    
+    .authors-list {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    
+    .author {
+      color: var(--author-text);
+      font-size: 1.1rem;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .author:hover {
+      color: var(--accent-color);
+    }
+    
+    .equal-contrib {
+      font-size: 0.9rem;
+      color: var(--author-text);
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+    
+    .university-logos {
+      display: flex;
+      justify-content: center;
+      gap: 5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .university-logo {
+      height: 60px;
+      width: auto;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+    
+    .university-logo:hover {
+      opacity: 1;
+    }
+    
     .subtitle {
       font-size: 1.2rem;
-      color: #aaa;
+      color: var(--author-text);
       margin-bottom: 2rem;
       max-width: 600px;
       margin-left: auto;
@@ -94,11 +242,7 @@
     p {
       margin-bottom: 1.5rem;
       font-size: 1.1rem;
-      color: #ccc;
-    }
-    
-    .video-showcase {
-      margin: 4rem 0;
+      color: var(--author-text);
     }
     
     .video-grid {
@@ -114,12 +258,15 @@
       padding: 1.5rem;
       box-shadow: var(--card-shadow);
       transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
     }
     
     .video-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    body.light-mode .video-card:hover {
+        box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
     
     .video-card h3 {
@@ -134,9 +281,10 @@
       margin-bottom: 1rem;
       background: #000;
     }
+    body.light-mode .video-card video { background: #eee; }
     
     .video-description {
-      color: #bbb;
+      color: var(--author-text);
       font-size: 0.95rem;
       line-height: 1.5;
     }
@@ -154,7 +302,7 @@
       padding: 2.5rem;
       box-shadow: var(--card-shadow);
       position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
     }
     
     .diagram-title {
@@ -175,17 +323,17 @@
     .flow-item {
       flex: 1;
       min-width: 200px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-color);
       padding: 1.5rem;
       border-radius: 12px;
       text-align: center;
       position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
       transition: all 0.3s ease;
     }
     
     .flow-item:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--section-bg);
       transform: translateY(-2px);
     }
     
@@ -211,15 +359,15 @@
     }
     
     .comparison-item {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-color);
       padding: 2rem;
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
       transition: all 0.3s ease;
     }
     
     .comparison-item:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--section-bg);
     }
     
     .comparison-title {
@@ -236,12 +384,12 @@
     
     .comparison-item li {
       margin-bottom: 0.5rem;
-      color: #ddd;
+      color: var(--text-color);
     }
     
     .icon {
       font-size: 2.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0rem;
       color: var(--accent-color);
     }
     
@@ -256,16 +404,16 @@
     .depth-item {
       flex: 1;
       min-width: 250px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-color);
       padding: 1.5rem;
       border-radius: 12px;
       text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
       transition: all 0.3s ease;
     }
     
     .depth-item:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--section-bg);
     }
     
     .depth-img {
@@ -273,14 +421,14 @@
       height: auto;
       border-radius: 8px;
       margin-bottom: 1rem;
-      background: #222;
+      background: var(--section-bg);
       aspect-ratio: 16/9;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.9rem;
-      color: #888;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--author-text);
+      border: 1px solid var(--border-color);
     }
     
     .key-points {
@@ -292,15 +440,15 @@
       gap: 1.5rem;
       margin-bottom: 2rem;
       align-items: flex-start;
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--section-bg);
       padding: 1.5rem;
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
       transition: all 0.3s ease;
     }
     
     .point:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--bg-color);
     }
     
     .point-number {
@@ -325,14 +473,14 @@
     footer {
       margin-top: 4rem;
       text-align: center;
-      color: #777;
+      color: var(--author-text);
       font-size: 0.9rem;
       padding: 2rem 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid var(--border-color);
     }
     
     .code-snippet {
-      background: #111;
+      background: var(--bg-color);
       padding: 1.5rem;
       border-radius: 8px;
       font-family: 'Fira Code', monospace;
@@ -340,12 +488,47 @@
       overflow-x: auto;
       font-size: 0.9rem;
       border-left: 3px solid var(--accent-color);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
     }
     
     @media (max-width: 768px) {
       .container {
         padding: 0 1rem;
+      }
+      
+      .theme-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+      }
+      
+      .publication-links {
+        gap: 0.5rem;
+      }
+      
+      .external-link {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+      
+      .authors-list {
+        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      /* .university-logos {
+        gap: 15rem;
+      } */
+      
+      .university-logo {
+        height: 40px;
+      }
+      
+      .title-logo {
+        width: 50px;
+        height: 50px;
       }
       
       .flow-diagram {
@@ -386,9 +569,64 @@
   </style>
 </head>
 <body>
+  <!-- Theme toggle button -->
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+    <i class="fas fa-sun" id="themeIcon"></i>
+  </button>
+
   <div class="container">
     <header class="fade-in">
-      <h1>Time Blindness: Why Video-Language Models Can't See What Humans Can?</h1>
+      <h1> <img src="static/timeblind_logo.png" width="50"> Time Blindness: Why Video-Language Models Can't See What Humans Can? </h1>
+      
+      <!-- Publication Links -->
+      <div class="publication-links">
+        <span class="link-block">
+          <a href="https://arxiv.org/abs/2505.24949" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <i class="fas fa-file-pdf"></i>
+            </span>
+            <span>Paper</span>
+          </a>
+        </span>
+        
+        <span class="link-block">
+          <a href="https://github.com/TimeBlindness/time-blindness" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <i class="fab fa-github"></i>
+            </span>
+            <span>Code</span>
+          </a>
+        </span>
+        
+        <span class="link-block">
+            <a href="https://huggingface.co/datasets/timeblindness/spooky-bench"
+                class="external-link button is-normal is-rounded is-dark">
+                <span class="icon" style="font-size:18px">🤗</span>
+                <span>Dataset</span>
+            </a>
+        </span>
+      </div>
+      
+      <!-- Authors Section -->
+      <div class="authors-section">
+        <h3 class="authors-title">Authors</h3>
+        <div class="authors-list">
+          <a href="https://ujjwalupadhyay.me" class="author">Ujjwal Upadhyay<sup>*</sup></a>
+          <a href="https://mukul54.github.io/" class="author">Mukul Ranjan<sup>*</sup></a>
+          <a href="https://zhiqiangshen.com/" class="author">Zhiqiang Shen</a>
+          <a href="https://www.mohamed-elhoseiny.com/" class="author">Mohamed Elhoseiny</a>
+        </div>
+        <div class="equal-contrib">
+          <sup>*</sup>Equal Contribution
+        </div>
+        
+        <!-- University Logos - You'll need to replace these with actual logo paths -->
+        <div class="university-logos">
+          <img src="static/logos/kaust_logo.png" alt="KAUST" class="university-logo">
+          <img src="static/logos/mbzuai_logo.png" alt="MBZUAI" class="university-logo">
+        </div>
+      </div>
+      
       <p class="subtitle">Explore how noise animation systems create dynamic visual effects through depth maps and sophisticated masking techniques.</p>
       <a href="generate.html" class="cta-button">🎨 Try the Animation Studio</a>
     </header>
@@ -505,7 +743,7 @@ const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
         </div>
       </section>
       
-      <section class="diagram fade-in">
+      <!-- <section class="diagram fade-in">
         <h2 class="diagram-title">🗺️ Depth Map Visualization</h2>
         <p>The depth map controls how fast the noise animates at each pixel. Brighter areas in the depth map represent "closer" objects and animate faster.</p>
         
@@ -519,7 +757,7 @@ const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
             <p>Noise scrolls at different speeds based on depth values</p>
           </div>
         </div>
-      </section>
+      </section> -->
       
       <section class="key-points fade-in">
         <h2>🔑 Key Technical Components</h2>
@@ -558,12 +796,47 @@ const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
       </section>
     </div>
     
-    <footer>
-      <p>&copy; 2024 Time Blindness Research Project. Exploring the intersection of visual perception and machine learning.</p>
-    </footer>
+    <!-- <footer>
+      <p>&copy; 2025 Time Blindness Research Project. Exploring the intersection of visual perception and machine learning.</p>
+    </footer> -->
   </div>
 
   <script>
+    // Theme toggle functionality
+    function toggleTheme() {
+      const body = document.body;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = body.getAttribute('data-theme');
+      
+      if (currentTheme === 'light') {
+        body.removeAttribute('data-theme');
+        themeIcon.className = 'fas fa-sun';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-moon';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    
+    // Load saved theme
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const body = document.body;
+      const themeIcon = document.getElementById('themeIcon');
+      
+      if (savedTheme === 'light') {
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-moon';
+      } else {
+        body.removeAttribute('data-theme');
+        themeIcon.className = 'fas fa-sun';
+      }
+    }
+    
+    // Initialize theme on page load
+    document.addEventListener('DOMContentLoaded', loadTheme);
+
     // Add fade-in animation on scroll
     const observerOptions = {
       threshold: 0.1,
@@ -613,4 +886,4 @@ const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
     });
   </script>
 </body>
-</html> 
+</html>
