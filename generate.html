@@ -341,6 +341,571 @@
       margin-top: 0.25rem;
       line-height: 1.3;
     }
+
+    /* Modern Animation Controls */
+    .animation-controls {
+      background: linear-gradient(145deg, rgba(25, 25, 35, 0.95), rgba(35, 35, 45, 0.95));
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(79, 172, 254, 0.2);
+      padding: 1rem;
+      margin: 1rem 0;
+      max-width: 960px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .control-panel {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 0.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .control-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      opacity: 0.6;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4facfe;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .control-group label {
+      font-size: 0.7rem;
+      color: #bbb;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .compact-select, .compact-input {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .compact-select:focus, .compact-input:focus {
+      border-color: #4facfe;
+      background: rgba(79, 172, 254, 0.1);
+      box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+    }
+
+    .compact-input {
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Noise Panel Styles */
+    .slider-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .slider-control {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .slider-control label {
+      font-size: 0.7rem;
+      color: #bbb;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .slider-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .slider-wrapper input[type="range"] {
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      height: 4px;
+    }
+
+    .slider-wrapper input[type="range"]::-webkit-slider-track {
+      background: rgba(255, 255, 255, 0.2);
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    .slider-wrapper input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #4facfe, #00f2fe);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+    }
+
+    .slider-value {
+      background: rgba(79, 172, 254, 0.2);
+      color: #4facfe;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    /* Checkbox Styles */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .modern-checkbox {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: #ddd;
+      position: relative;
+    }
+
+    .modern-checkbox input {
+      opacity: 0;
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-mark {
+      width: 16px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      margin-right: 0.5rem;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .modern-checkbox:hover .checkbox-mark {
+      border-color: #4facfe;
+      background: rgba(79, 172, 254, 0.1);
+    }
+
+    .modern-checkbox input:checked ~ .checkbox-mark {
+      background: linear-gradient(45deg, #4facfe, #00f2fe);
+      border-color: #4facfe;
+    }
+
+    .modern-checkbox input:checked ~ .checkbox-mark::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .color-controls {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .modern-color-input {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modern-color-input:hover {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+    }
+
+    .depth-control {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .depth-control label {
+      font-size: 0.65rem;
+      color: #999;
+      margin: 0;
+    }
+
+    .mini-slider {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .mini-slider input[type="range"] {
+      width: 60px;
+      height: 3px;
+    }
+
+    .mini-value {
+      font-size: 0.65rem;
+      color: #4facfe;
+      min-width: 16px;
+    }
+
+    .checkbox-item {
+      flex-direction: row;
+      align-items: center;
+      gap: 0;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #e0e0e0;
+      font-weight: 500;
+      position: relative;
+      padding-left: 1.3rem;
+      margin: 0;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      left: 0;
+      top: 0;
+      width: 12px;
+      height: 12px;
+    }
+
+    .checkmark {
+      position: absolute;
+      left: 0;
+      top: 1px;
+      height: 12px;
+      width: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      transition: all 0.3s ease;
+    }
+
+    .checkbox-label:hover .checkmark {
+      border-color: #4facfe;
+      background: rgba(79, 172, 254, 0.1);
+    }
+
+    .checkbox-label input:checked ~ .checkmark {
+      background: #4facfe;
+      border-color: #4facfe;
+    }
+
+    .checkbox-label input:checked ~ .checkmark:after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 1px;
+      width: 2px;
+      height: 5px;
+      border: solid white;
+      border-width: 0 1.5px 1.5px 0;
+      transform: rotate(45deg);
+    }
+
+    .bg-color-controls {
+      display: none;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .color-input {
+      width: 35px !important;
+      height: 35px !important;
+      padding: 0 !important;
+      border-radius: 6px !important;
+      border: 2px solid rgba(255, 255, 255, 0.2) !important;
+      cursor: pointer;
+    }
+
+    /* Playback Panel Styles */
+    .playback-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .modern-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: none;
+      letter-spacing: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modern-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .modern-btn:hover::before {
+      left: 100%;
+    }
+
+    .pause-btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .pause-btn:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+      border-color: #4facfe;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(79, 172, 254, 0.2);
+    }
+
+    .record-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .record-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .record-input label {
+      font-size: 0.7rem;
+      color: #bbb;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-unit {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .input-unit input {
+      flex: 1;
+      padding: 0.4rem 0.6rem;
+      border: none;
+      background: transparent;
+      color: white;
+      font-size: 0.75rem;
+      text-align: center;
+      outline: none;
+    }
+
+    .input-unit .unit {
+      padding: 0.4rem 0.6rem;
+      background: rgba(79, 172, 254, 0.2);
+      color: #4facfe;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .record-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      color: white;
+      position: relative;
+    }
+
+    .record-btn:hover {
+      background: linear-gradient(135deg, #ff5252, #f44336);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
+    }
+
+    .record-btn.recording {
+      background: linear-gradient(135deg, #4caf50, #43a047);
+      animation: recordPulse 2s infinite;
+    }
+
+    @keyframes recordPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+      50% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    }
+
+    .record-indicator {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+
+    .record-indicator.active {
+      background: #ff1744;
+      animation: recordBlink 1s infinite;
+    }
+
+    @keyframes recordBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .control-panel {
+        padding: 0.75rem;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .animation-controls {
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+      }
+
+      .controls-grid {
+        gap: 0.5rem;
+      }
+
+      .control-panel {
+        padding: 0.5rem;
+      }
+
+      .panel-header {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.4rem;
+      }
+
+      .panel-title {
+        font-size: 0.75rem;
+      }
+
+      .slider-grid {
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .checkbox-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .color-controls {
+        margin-top: 0.5rem;
+      }
+
+      .playback-grid {
+        gap: 0.5rem;
+      }
+
+      .modern-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.7rem;
+      }
+
+      .record-section {
+        gap: 0.4rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -358,15 +923,9 @@
           <div class="status-indicator" id="depthStatus"></div>
         </div>
         <div class="section-content" id="depthContent">
-          <div class="control-group">
-            <label>
-              <input type="checkbox" id="useDepthMap">
-              Enable Advanced Depth Processing
-            </label>
-            <div class="small-text">Uses sophisticated depth analysis for realistic movement</div>
-          </div>
 
-          <div class="control-group" id="depthSourceGroup" style="display: none;">
+
+          <div class="control-group">
             <label>Depth Source</label>
             <div class="radio-group">
               <label><input type="radio" name="depthSource" value="image" checked> Image</label>
@@ -390,7 +949,7 @@
             </div>
           </div>
 
-          <div class="control-group" id="depthAdvancedControls" style="display: none;">
+          <div class="control-group">
             <label>Foreground Speed (px/sec)</label>
             <input type="number" id="foregroundSpeed" value="60" min="1" max="300">
 
@@ -413,7 +972,7 @@
             </div>
           </div>
 
-          <div class="control-group" id="depthBasicControls">
+          <div class="control-group">
             <label>Depth Scale</label>
             <input type="number" id="depthScale" value="2" step="0.1" min="0.1" max="10">
             <div class="small-text">Multiplier for depth-based movement speed</div>
@@ -481,97 +1040,118 @@
         </div>
       </div>
 
-      <!-- Animation Section -->
-      <div class="control-section">
-        <div class="section-header" onclick="toggleSection('animation')">
-          Animation
-          <div class="status-indicator active" id="animationStatus"></div>
-        </div>
-        <div class="section-content" id="animationContent">
-          <div class="control-group">
-            <label>Movement Direction</label>
-            <select id="movementDirection">
-              <option value="vertical">Vertical</option>
-              <option value="horizontal">Horizontal</option>
-            </select>
-          </div>
 
-          <div class="control-group">
-            <label>Animation Speed</label>
-            <input type="number" id="animationSpeed" value="2" step="0.5" min="0.1" max="20">
-          </div>
 
-          <div class="control-group">
-            <label>Background Noise Density (%)</label>
-            <div class="control-row">
-              <input type="range" id="bgNoiseDensity" value="50" min="0" max="100">
-              <div class="value-display" id="bgNoiseDensityValue">50</div>
-            </div>
-          </div>
 
-          <div class="control-group">
-            <label>Foreground Noise Density (%)</label>
-            <div class="control-row">
-              <input type="range" id="fgNoiseDensity" value="50" min="0" max="100">
-              <div class="value-display" id="fgNoiseDensityValue">50</div>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <label>Speckle Size (px)</label>
-            <input type="number" id="speckleSize" value="3" min="1" max="20">
-          </div>
-
-          <div class="control-group">
-            <label>
-              <input type="checkbox" id="removeBackgroundNoise">
-              Replace Background with Solid Color
-            </label>
-            
-            <div id="backgroundColorGroup" style="display: none;">
-              <label>Background Color</label>
-              <input type="color" id="backgroundColor" value="#ffffff">
-              
-              <div id="depthThresholdGroup" style="display: none;">
-                <label>Depth Cutoff Threshold</label>
-                <div class="control-row">
-                  <input type="range" id="depthThreshold" value="5" min="0" max="100">
-                  <div class="value-display" id="depthThresholdValue">5</div>
-                </div>
-                <div class="small-text">Lower values = more background area</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <button id="pauseButton" class="secondary">Pause</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recording Section -->
-      <div class="control-section">
-        <div class="section-header" onclick="toggleSection('recording')">
-          Recording
-          <div class="status-indicator" id="recordingStatus"></div>
-        </div>
-        <div class="section-content" id="recordingContent">
-          <div class="control-group">
-            <label>Record Duration (seconds)</label>
-            <input type="number" id="recordDuration" value="5" min="1" max="60">
-          </div>
-
-          <div class="control-group">
-            <button id="recordButton" class="record">Start Recording</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="canvas-container">
       <canvas id="noiseCanvas" width="960" height="540"></canvas>
+      
+      <!-- Animation Controls -->
+      <div class="animation-controls">
+        <div class="controls-grid">
+          <!-- Left Panel: Core Settings -->
+          <div class="control-panel core-settings">
+            <div class="panel-header">
+              <span class="panel-title">⚙️ Core</span>
+              <div class="status-indicator active" id="animationStatus"></div>
+            </div>
+            <div class="control-grid">
+              <div class="control-group">
+                <label>Mode</label>
+                <select id="animationMode" class="compact-select">
+                  <option value="depth">Depth Mapping</option>
+                  <option value="content" selected>Content</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label>Direction</label>
+                <select id="movementDirection" class="compact-select">
+                  <option value="vertical">↕ Vertical</option>
+                  <option value="horizontal">↔ Horizontal</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label>Speed</label>
+                <input type="number" id="animationSpeed" value="1" step="0.5" min="0.1" max="20" class="compact-input">
+              </div>
+              <div class="control-group">
+                <label>Speckle</label>
+                <input type="number" id="speckleSize" value="2" min="1" max="20" class="compact-input">
+              </div>
+            </div>
+          </div>
+
+          <!-- Center Panel: Noise Settings -->
+          <div class="control-panel noise-settings">
+            <div class="panel-header">
+              <span class="panel-title">🔵 Noise</span>
+            </div>
+            <div class="slider-grid">
+              <div class="slider-control">
+                <label>Background</label>
+                <div class="slider-wrapper">
+                  <input type="range" id="bgNoiseDensity" value="50" min="0" max="100">
+                  <span class="slider-value" id="bgNoiseDensityValue">50%</span>
+                </div>
+              </div>
+              <div class="slider-control">
+                <label>Foreground</label>
+                <div class="slider-wrapper">
+                  <input type="range" id="fgNoiseDensity" value="50" min="0" max="100">
+                  <span class="slider-value" id="fgNoiseDensityValue">50%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="checkbox-row">
+              <label class="modern-checkbox">
+                <input type="checkbox" id="removeBackgroundNoise">
+                <span class="checkbox-mark"></span>
+                <span class="checkbox-text">Solid Background</span>
+              </label>
+              <div id="backgroundColorGroup" class="color-controls">
+                <input type="color" id="backgroundColor" value="#ffffff" class="modern-color-input">
+                <div id="depthThresholdGroup" class="depth-control">
+                  <label>Cutoff</label>
+                  <div class="mini-slider">
+                    <input type="range" id="depthThreshold" value="5" min="0" max="100">
+                    <span class="mini-value" id="depthThresholdValue">5</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Playback Controls -->
+          <div class="control-panel playback-controls">
+            <div class="panel-header">
+              <span class="panel-title">▶️ Playback</span>
+            </div>
+            <div class="playback-grid">
+              <button id="canvasPauseButton" class="modern-btn pause-btn">
+                <span class="btn-icon">⏸</span>
+                <span>Pause</span>
+              </button>
+              <div class="record-section">
+                <div class="record-input">
+                  <label>Duration</label>
+                  <div class="input-unit">
+                    <input type="number" id="recordDuration" value="5" min="1" max="60" class="compact-input">
+                    <span class="unit">sec</span>
+                  </div>
+                </div>
+                <button id="recordButton" class="modern-btn record-btn">
+                  <span class="btn-icon">●</span>
+                  <span>Record</span>
+                  <div class="record-indicator" id="recordingStatus"></div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -590,9 +1170,9 @@
     let isPaused = false;
     let animationFrameId = null;
     let startTime = null;
+    let animationMode = 'content';
 
     // Depth state
-    let useAdvancedDepth = false;
     let depthSource = 'image';
     let depthImageData = null;
     let depthVideo = null;
@@ -622,10 +1202,10 @@
 
     // Animation parameters
     let movementDirection = 'vertical';
-    let animationSpeed = 2;
+    let animationSpeed = 1;
     let bgNoiseDensity = 0.5;
     let fgNoiseDensity = 0.5;
-    let speckleSize = 3;
+    let speckleSize = 2;
     let removeBackgroundNoise = false;
     let backgroundColor = '#ffffff';
     let depthThreshold = 5;
@@ -785,7 +1365,7 @@
     }
 
     function updateMask() {
-      if (useAdvancedDepth) {
+      if (animationMode === 'depth') {
         maskData = null;
         return;
       }
@@ -848,18 +1428,20 @@
 
       animationFrameId = requestAnimationFrame(animate);
 
-      if (!startTime) startTime = timestamp;
+      if (!startTime) {
+        startTime = timestamp;
+      }
       const elapsedSeconds = (timestamp - startTime) / 1000;
 
-      // Update shape movement if enabled
-      if (!useAdvancedDepth && contentType === 'shape') {
+      // Update shape movement if enabled (only in content mode)
+      if (animationMode === 'content' && contentType === 'shape') {
         updateShapeMovement();
         updateMask();
       }
 
       // Update depth frame if using video
       let currentDepthData = null;
-      if ((useAdvancedDepth || depthImageData) && depthSource === 'video' && depthVideo && depthVideo.readyState >= 2) {
+      if ((animationMode === 'depth' || depthImageData) && depthSource === 'video' && depthVideo && depthVideo.readyState >= 2) {
         depthCtx.drawImage(depthVideo, 0, 0, width, height);
         currentDepthData = depthCtx.getImageData(0, 0, width, height).data;
       } else if (depthImageData) {
@@ -867,7 +1449,7 @@
       }
 
       // Calculate offsets
-      if (useAdvancedDepth) {
+      if (animationMode === 'depth') {
         // Advanced depth mode uses uniform foreground speed
         const pixelsPerSecond = foregroundSpeed;
         const totalOffset = pixelsPerSecond * elapsedSeconds;
@@ -934,7 +1516,7 @@
 
         ctx.putImageData(imageData, 0, 0);
       } else {
-        // Standard mode with depth scale or mask-based
+        // Content mode with mask-based rendering
         if (movementDirection === 'vertical') {
           backgroundOffset = (backgroundOffset + animationSpeed) % height;
           foregroundOffset = (foregroundOffset - animationSpeed + height) % height;
@@ -950,7 +1532,8 @@
           for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
             
-            let useDepthScaling = currentDepthData && !maskData;
+            // Content mode uses mask-based rendering
+            let useDepthScaling = false;
             
             if (useDepthScaling) {
               // Simple depth scaling mode
@@ -1035,31 +1618,6 @@
     // === Event Listeners ===
     
     // Depth controls
-    document.getElementById('useDepthMap').addEventListener('change', (e) => {
-      useAdvancedDepth = e.target.checked;
-      document.getElementById('depthAdvancedControls').style.display = useAdvancedDepth ? 'block' : 'none';
-      document.getElementById('depthSourceGroup').style.display = useAdvancedDepth ? 'block' : 'none';
-      document.getElementById('depthStatus').classList.toggle('active', useAdvancedDepth);
-      
-      // Show/hide content controls
-      const contentGroups = ['contentTypeGroup', 'textControls', 'imageControls', 'shapeControls'];
-      contentGroups.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.classList.toggle('disabled', useAdvancedDepth);
-        }
-      });
-      
-      // Update depth threshold visibility
-      updateDepthThresholdVisibility();
-      
-      if (useAdvancedDepth) {
-        maskData = null;
-        refreshNoise();
-      } else {
-        updateMask();
-      }
-    });
 
     document.querySelectorAll('input[name="depthSource"]').forEach(radio => {
       radio.addEventListener('change', (e) => {
@@ -1246,6 +1804,16 @@
     });
 
     // Animation controls
+    document.getElementById('animationMode').addEventListener('change', (e) => {
+      animationMode = e.target.value;
+      backgroundOffset = 0;
+      foregroundOffset = 0;
+      // Reset start time to restart animation timing
+      startTime = null;
+      updateMask();
+      updateDepthThresholdVisibility();
+    });
+
     document.getElementById('movementDirection').addEventListener('change', (e) => {
       movementDirection = e.target.value;
       backgroundOffset = 0;
@@ -1260,14 +1828,14 @@
     document.getElementById('bgNoiseDensity').addEventListener('input', (e) => {
       const value = parseInt(e.target.value);
       bgNoiseDensity = value / 100;
-      document.getElementById('bgNoiseDensityValue').textContent = value;
+      document.getElementById('bgNoiseDensityValue').textContent = value + '%';
       refreshNoise();
     });
 
     document.getElementById('fgNoiseDensity').addEventListener('input', (e) => {
       const value = parseInt(e.target.value);
       fgNoiseDensity = value / 100;
-      document.getElementById('fgNoiseDensityValue').textContent = value;
+      document.getElementById('fgNoiseDensityValue').textContent = value + '%';
       refreshNoise();
     });
 
@@ -1277,13 +1845,13 @@
     });
 
     function updateDepthThresholdVisibility() {
-      const showDepthThreshold = removeBackgroundNoise && (useAdvancedDepth || depthImageData);
-      document.getElementById('depthThresholdGroup').style.display = showDepthThreshold ? 'block' : 'none';
+      const showDepthThreshold = removeBackgroundNoise && (animationMode === 'depth' || depthImageData);
+      document.getElementById('depthThresholdGroup').style.display = showDepthThreshold ? 'flex' : 'none';
     }
 
     document.getElementById('removeBackgroundNoise').addEventListener('change', (e) => {
       removeBackgroundNoise = e.target.checked;
-      document.getElementById('backgroundColorGroup').style.display = removeBackgroundNoise ? 'block' : 'none';
+      document.getElementById('backgroundColorGroup').style.display = removeBackgroundNoise ? 'flex' : 'none';
       updateDepthThresholdVisibility();
     });
 
@@ -1296,16 +1864,28 @@
       document.getElementById('depthThresholdValue').textContent = depthThreshold;
     });
 
-    document.getElementById('pauseButton').addEventListener('click', () => {
+    function togglePause() {
       isPaused = !isPaused;
-      const button = document.getElementById('pauseButton');
-      button.textContent = isPaused ? 'Resume' : 'Pause';
+      const canvasPauseButton = document.getElementById('canvasPauseButton');
+      const btnText = canvasPauseButton.querySelector('span:not(.btn-icon)');
+      const btnIcon = canvasPauseButton.querySelector('.btn-icon');
+      
+      if (isPaused) {
+        btnText.textContent = 'Resume';
+        btnIcon.textContent = '▶';
+      } else {
+        btnText.textContent = 'Pause';
+        btnIcon.textContent = '⏸';
+      }
+      
       document.getElementById('animationStatus').classList.toggle('active', !isPaused);
       
       if (!isPaused && !animationFrameId) {
         animationFrameId = requestAnimationFrame(animate);
       }
-    });
+    }
+
+    document.getElementById('canvasPauseButton').addEventListener('click', togglePause);
 
     // Recording controls
     function stopRecording() {
@@ -1313,8 +1893,13 @@
         mediaRecorder.stop();
       }
       isRecording = false;
-      document.getElementById('recordButton').textContent = 'Start Recording';
-      document.getElementById('recordButton').classList.remove('recording');
+      const recordButton = document.getElementById('recordButton');
+      const btnText = recordButton.querySelector('span:not(.btn-icon)');
+      const btnIcon = recordButton.querySelector('.btn-icon');
+      
+      btnText.textContent = 'Record';
+      btnIcon.textContent = '●';
+      recordButton.classList.remove('recording');
       document.getElementById('recordingStatus').classList.remove('active');
     }
 
@@ -1353,18 +1938,38 @@
       isRecording = true;
       startTime = null;
       mediaRecorder.start();
-      document.getElementById('recordButton').textContent = 'Recording...';
-      document.getElementById('recordButton').classList.add('recording');
+      
+      const recordButton = document.getElementById('recordButton');
+      const btnText = recordButton.querySelector('span:not(.btn-icon)');
+      const btnIcon = recordButton.querySelector('.btn-icon');
+      
+      btnText.textContent = 'Recording...';
+      btnIcon.textContent = '⏹';
+      recordButton.classList.add('recording');
       document.getElementById('recordingStatus').classList.add('active');
     });
 
     // === Initialize ===
-    refreshNoise();
-    updateMask();
-    animate();
+    function initializeApp() {
+      refreshNoise();
+      updateMask();
+      updateDepthThresholdVisibility();
+      
+      // Start animation
+      isPaused = false;
+      animationFrameId = requestAnimationFrame(animate);
 
-    // Set initial content status
-    document.getElementById('contentStatus').classList.add('active');
+      // Set initial status indicators
+      document.getElementById('depthStatus').classList.add('active');
+      document.getElementById('contentStatus').classList.add('active');
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
   </script>
 </body>
 </html> 

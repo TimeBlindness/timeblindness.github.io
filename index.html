@@ -137,6 +137,10 @@
       color: white;
     }
     
+    .external-link:hover .icon {
+      color: white;
+    }
+    
     .external-link .icon {
       font-size: 1.1rem;
     }
@@ -571,7 +575,7 @@
 <body>
   <!-- Theme toggle button -->
   <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-    <i class="fas fa-sun" id="themeIcon"></i>
+    <i class="fas fa-moon" id="themeIcon"></i>
   </button>
 
   <div class="container">
@@ -825,12 +829,13 @@ const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
       const body = document.body;
       const themeIcon = document.getElementById('themeIcon');
       
-      if (savedTheme === 'light') {
-        body.setAttribute('data-theme', 'light');
-        themeIcon.className = 'fas fa-moon';
-      } else {
+      if (savedTheme === 'dark') {
         body.removeAttribute('data-theme');
         themeIcon.className = 'fas fa-sun';
+      } else {
+        // Default to light theme
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-moon';
       }
     }
     

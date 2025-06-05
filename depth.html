@@ -54,7 +54,7 @@
     </div>
     <br>
     <label for="speedInput">Foreground Speed (px/sec):</label>
-    <input type="number" id="speedInput" value="60" min="1" max="300">
+    <input type="number" id="speedInput" value="1" min="1" max="300">
     <br>
     <label for="lowerThresholdInput">Foreground Threshold (Lower Bound):</label>
     <input type="range" id="lowerThresholdInput" value="128" min="0" max="255" step="1">
@@ -78,7 +78,7 @@
     <input type="number" id="noiseDensityInput" value="50" min="1" max="100">
     <br>
     <label for="speckleSizeInput">Speckle Size (px):</label>
-    <input type="number" id="speckleSizeInput" value="3" min="1" max="10">
+    <input type="number" id="speckleSizeInput" value="2" min="1" max="10">
     <br>
     <label for="recordDurationInput">Record Duration (seconds):</label>
     <input type="number" id="recordDurationInput" value="5" min="1" max="60">
@@ -100,9 +100,9 @@
     const height = canvas.height;
 
     // === Global Parameters ===
-    let foregroundSpeed = parseFloat(document.getElementById('speedInput').value) || 60;
+    let foregroundSpeed = parseFloat(document.getElementById('speedInput').value) || 1;
     document.getElementById('speedInput').addEventListener('input', (e) => {
-      foregroundSpeed = parseFloat(e.target.value) || 60;
+      foregroundSpeed = parseFloat(e.target.value) || 1;
     });
 
     // Animation state
@@ -189,12 +189,12 @@
 
     // === Generate a Static, Seamless Noise Field ===
     const noiseField = new Uint8ClampedArray(width * height);
-    let speckleSize = parseInt(document.getElementById('speckleSizeInput').value) || 3; // size (in pixels) of each noise block
+    let speckleSize = parseInt(document.getElementById('speckleSizeInput').value) || 2; // size (in pixels) of each noise block
     let noiseDensity = parseInt(document.getElementById('noiseDensityInput').value) || 50; // percentage of white pixels
 
     // Event listeners for noise parameters
     document.getElementById('speckleSizeInput').addEventListener('change', () => {
-      speckleSize = parseInt(document.getElementById('speckleSizeInput').value) || 3;
+      speckleSize = parseInt(document.getElementById('speckleSizeInput').value) || 2;
       generateNoiseField();
     });
 
