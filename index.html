@@ -274,6 +274,14 @@
     figcaption { font-size: 0.9rem; color: var(--ink-soft); margin-top: 0.65rem; line-height: 1.5; }
     figcaption b { color: var(--ink); font-weight: 700; }
 
+    /* ============ VIDEO EMBED ============ */
+    .video-embed {
+      position: relative; width: 100%; padding-bottom: 56.25%; height: 0;
+      border-radius: 8px; overflow: hidden; border: 1px solid var(--line);
+      background: var(--stage); box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
     /* ============ TABLES ============ */
     .table-wrap { overflow-x: auto; }
     table {
@@ -463,6 +471,9 @@
         <a href="https://arxiv.org/abs/2505.24867" class="external-link">
           <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span>
         </a>
+        <a href="https://www.youtube.com/watch?v=3wANeXAIy4U" class="external-link">
+          <span class="icon"><i class="fab fa-youtube"></i></span><span>Video</span>
+        </a>
         <a href="https://github.com/TimeBlindness/time-blindness" class="external-link">
           <span class="icon"><i class="fab fa-github"></i></span><span>Code</span>
         </a>
@@ -512,6 +523,15 @@
     </header>
 
     <main>
+      <!-- Overview video -->
+      <section class="sect fade-in">
+        <div class="sect-head"><span class="sect-num"><i class="fas fa-circle-play"></i></span><span class="sect-title">Overview Video</span></div>
+        <div class="video-embed">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/3wANeXAIy4U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+        <figcaption>A two-minute walkthrough of SpookyBench and the time-blindness phenomenon &mdash; why every Video-VLM scores 0% on stimuli humans read at 98%.</figcaption>
+      </section>
+
       <!-- 01 The Question -->
       <section class="sect fade-in">
         <div class="sect-head"><span class="sect-num">01</span><span class="sect-title">The Question</span></div>
