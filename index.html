@@ -318,7 +318,17 @@
     .stim-frame {
       background: var(--stage); border-radius: 6px; overflow: hidden;
       aspect-ratio: 16/9; border: 1px solid var(--line);
+      position: relative; cursor: pointer;
     }
+    .stim-frame::after {
+      content: "\25B6"; position: absolute; inset: 0; margin: auto;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: rgba(26,31,38,0.55); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; padding-left: 3px;
+      opacity: 0; transition: opacity 0.2s ease; pointer-events: none;
+    }
+    .stim-frame:hover::after { opacity: 1; }
     .stim-frame video { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--stage); }
     .stim-tag {
       font-family: 'Space Grotesk', sans-serif; font-weight: 700;
@@ -331,6 +341,45 @@
     }
     .stim-desc { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.25rem; line-height: 1.45; }
     .stim-desc b { color: var(--ink); font-weight: 700; }
+
+    /* ============ VIDEO MODAL ============ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(14,17,22,0.92);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; opacity: 0; visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal-box {
+      position: relative; width: min(920px, 100%);
+      background: var(--paper-3); border: 1px solid var(--line);
+      border-radius: 14px; padding: 1.4rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      transform: translateY(14px); transition: transform 0.25s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-close {
+      position: absolute; top: -14px; right: -14px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--ink); color: #fff; border: 2px solid var(--paper);
+      font-size: 1.5rem; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s ease;
+    }
+    .modal-close:hover { background: var(--red); }
+    .modal-tag {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 0.95rem; letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--ink); margin-bottom: 0.7rem;
+    }
+    .modal-video-frame {
+      background: var(--stage); border: 1px solid var(--line);
+      border-radius: 8px; overflow: hidden;
+    }
+    .modal-video-frame video { width: 100%; display: block; max-height: 70vh; background: var(--stage); }
+    .modal-hint { font-size: 0.9rem; color: var(--ink-soft); margin: 0.8rem 0 0; line-height: 1.5; }
+    .modal-hint strong { color: var(--green-dk); }
 
     /* ============ CALLOUT ============ */
     .callout {
@@ -794,6 +843,18 @@
     Time Blindness <span class="dot"></span> CVPR 2026 <span class="dot"></span> KAUST &middot; MBZUAI &middot; DocPanel
   </footer>
 
+  <!-- Stimulus video modal -->
+  <div class="modal-overlay" id="videoModal" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Stimulus video">
+      <button class="modal-close" id="modalClose" aria-label="Close video">&times;</button>
+      <div class="modal-tag" id="modalTag"></div>
+      <div class="modal-video-frame">
+        <video id="modalVideo" controls loop playsinline></video>
+      </div>
+      <p class="modal-hint">Tip: <strong>pause</strong> the video &mdash; every single frame is pure static noise. The content exists only in the motion.</p>
+    </div>
+  </div>
+
   <script>
     // Fade-in on scroll
     const observer = new IntersectionObserver((entries) => {
@@ -821,10 +882,55 @@
       });
     }, { threshold: 0.4 });
 
-    document.querySelectorAll('video').forEach(v => {
+    document.querySelectorAll('.stim-frame video').forEach(v => {
       v.muted = true; v.loop = true; v.setAttribute('playsinline', '');
       videoObserver.observe(v);
     });
+
+    // ===== Stimulus video modal (click to enlarge + pause/scrub) =====
+    (function () {
+      const modal = document.getElementById('videoModal');
+      const modalVideo = document.getElementById('modalVideo');
+      const modalTag = document.getElementById('modalTag');
+      const modalClose = document.getElementById('modalClose');
+      if (!modal) return;
+
+      function openModal(src, tag) {
+        modalVideo.src = src;
+        modalTag.textContent = tag || '';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        modalVideo.muted = true;          // guarantee playback starts
+        const p = modalVideo.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+      function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        modalVideo.pause();
+        modalVideo.removeAttribute('src');
+        modalVideo.load();
+      }
+
+      document.querySelectorAll('.stim-frame').forEach(frame => {
+        frame.addEventListener('click', () => {
+          const srcEl = frame.querySelector('video source') || frame.querySelector('video');
+          const src = srcEl ? srcEl.getAttribute('src') : '';
+          const card = frame.closest('.stim-card');
+          const tagEl = card ? card.querySelector('.stim-tag') : null;
+          const tag = tagEl ? tagEl.textContent.replace(/\s+/g, ' ').trim() : '';
+          if (src) openModal(src, tag);
+        });
+      });
+
+      modalClose.addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
+    })();
   </script>
 </body>
 </html>
