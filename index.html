@@ -199,6 +199,29 @@
     }
     .cta-button:hover { background: var(--green-dk); transform: translateY(-2px); }
 
+    /* ============ CONFERENCE BANNER ============ */
+    .conf-banner {
+      display: flex; align-items: center; gap: 1.1rem; text-align: left;
+      max-width: 720px; margin: 2.4rem auto 0;
+      background: var(--paper-3); border: 1px solid var(--line);
+      border-left: 4px solid var(--green); border-radius: 12px;
+      padding: 1rem 1.4rem; box-shadow: 0 6px 22px rgba(0,0,0,0.05);
+    }
+    .conf-banner-icon {
+      flex: 0 0 46px; height: 46px; border-radius: 10px;
+      background: var(--green); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+    }
+    .conf-banner-title {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 1.05rem; color: var(--ink); letter-spacing: 0.2px;
+    }
+    .conf-banner-sub { font-size: 0.92rem; color: var(--ink-soft); margin-top: 0.2rem; line-height: 1.45; }
+    .conf-banner-sub strong { color: var(--green-dk); font-weight: 700; }
+    @media (max-width: 720px) {
+      .conf-banner { flex-direction: column; text-align: center; }
+    }
+
     /* ============ SECTIONS ============ */
     main { padding: 1rem 0 2rem; }
     .sect {
@@ -476,6 +499,15 @@
 
       <div class="cta-wrap">
         <a href="generate.html" class="cta-button">&#127912; Try the Animation Studio</a>
+      </div>
+
+      <!-- Conference banner -->
+      <div class="conf-banner">
+        <div class="conf-banner-icon"><i class="fas fa-location-dot"></i></div>
+        <div>
+          <div class="conf-banner-title">Come say hi at CVPR 2026 &#128075;</div>
+          <div class="conf-banner-sub"><strong>June 3&ndash;7, 2026</strong> &middot; Denver, Colorado &nbsp;&mdash;&nbsp; find us at <strong>Poster Session 5</strong> &amp; the Exhibit Hall (<strong>ExHall F</strong>).</div>
+        </div>
       </div>
     </header>
 
