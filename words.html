@@ -3,7 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <title>Noise Animation + Depth Map (Hide Text/Shapes on Depth)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    /* ── Design tokens ─────────────────────────────────── */
+    :root {
+      --ink:       #1A1F26;
+      --ink-2:     #2E3845;
+      --ink-soft:  #5A6573;
+      --paper:     #FBF8F1;
+      --paper-2:   #F2ECDD;
+      --paper-3:   #FFFFFF;
+      --blue:      #1F4E79;
+      --blue-dk:   #143659;
+      --green:     #4A7E1A;
+      --green-dk:  #355C13;
+      --red:       #B23A2C;
+      --line:      #E2DBC8;
+      --line-2:    #C8BFA8;
+      --stage:     #0E1116;
+    }
+
     body {
       margin: 0;
       display: flex;
@@ -11,33 +32,37 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: #1a1a1a;
-      color: white;
+      background: var(--paper);
+      color: var(--ink);
       gap: 20px;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     .container {
-      display: flex; 
-      flex-direction: column; 
-      gap: 20px; 
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
       padding: 20px;
-      background: #2a2a2a; 
+      background: var(--paper-3);
+      border: 1px solid var(--line);
       border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
     }
     canvas {
-      border: 2px solid #444; 
-      border-radius: 8px; 
+      border: 1px solid var(--line);
+      border-radius: 8px;
       cursor: pointer;
-      max-width: 100%; 
+      max-width: 100%;
       height: auto;
+      background: var(--stage);
+      display: block;
     }
     .controls {
-      display: grid; 
+      display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-      gap: 15px; 
-      padding: 15px; 
-      background: #333; 
+      gap: 15px;
+      padding: 15px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
       border-radius: 8px;
     }
     .control-group {
@@ -46,25 +71,89 @@
       gap: 8px;
     }
     label {
-      font-size: 14px;
-      color: #aaa;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      color: var(--ink-soft);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
-    input, select, button {
-      padding: 8px 12px; 
-      font-size: 14px; 
-      border: 1px solid #444;
-      border-radius: 4px; 
-      background: #2a2a2a; 
-      color: white;
+    /* Checkbox/radio labels – keep inline, no uppercase */
+    label:has(input[type="checkbox"]),
+    label:has(input[type="radio"]) {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    input[type="range"],
+    select {
+      padding: 8px 12px;
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      background: var(--paper-3);
+      color: var(--ink);
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      outline: 2px solid var(--blue);
+      outline-offset: 1px;
+      border-color: var(--blue);
+    }
+    input[type="range"] {
+      padding: 4px 0;
+      accent-color: var(--blue);
+    }
+    input[type="color"] {
+      padding: 2px 4px;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      background: var(--paper-3);
+      height: 36px;
+      cursor: pointer;
+    }
+    select {
+      appearance: auto;
+    }
+    button {
+      padding: 8px 14px;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover {
+      background: var(--blue);
     }
     .record-button {
-      background: #e74c3c;
+      background: var(--green);
+    }
+    .record-button:hover {
+      background: var(--green-dk);
     }
     .record-button.recording {
-      background: #27ae60;
+      background: var(--red);
     }
     .record-button.recording:hover {
-      background: #1faa51;
+      background: #8f2d22;
+    }
+    small {
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      color: var(--ink-soft);
     }
     .disabled {
       opacity: 0.5;

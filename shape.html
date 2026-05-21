@@ -4,136 +4,275 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Binary Shape Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        /* ── Design tokens ── */
+        :root {
+            --ink: #1A1F26;
+            --ink-2: #2E3845;
+            --ink-soft: #5A6573;
+            --paper: #FBF8F1;
+            --paper-2: #F2ECDD;
+            --paper-3: #FFFFFF;
+            --blue: #1F4E79;
+            --blue-dk: #143659;
+            --green: #4A7E1A;
+            --green-dk: #355C13;
+            --red: #B23A2C;
+            --line: #E2DBC8;
+            --line-2: #C8BFA8;
+            --stage: #0E1116;
+        }
+
+        /* ── Base ── */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
+            color: var(--ink);
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--paper);
         }
+
+        /* ── Headings ── */
         h1 {
             text-align: center;
-            color: #333;
+            color: var(--ink);
+            font-family: 'Fraunces', Georgia, serif;
+            font-weight: 900;
+            letter-spacing: -0.03em;
         }
+
+        h2, h3, h4 {
+            font-family: 'Fraunces', Georgia, serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+
+        /* ── Layout ── */
         .container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
         }
+
+        /* ── Panels ── */
         .control-panel {
             flex: 1;
             min-width: 300px;
-            background-color: white;
+            background-color: var(--paper-3);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--line);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
         }
+
         .preview-panel {
             flex: 2;
             min-width: 400px;
-            background-color: white;
+            background-color: var(--paper-3);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--line);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
+        /* ── Canvas stage — stays dark ── */
         .canvas-container {
-            border: 1px solid #ddd;
+            border: 1px solid var(--line);
+            border-radius: 8px;
             margin-bottom: 20px;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background-color: var(--stage);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
+        /* ── Form elements ── */
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             display: block;
             margin-bottom: 5px;
-            font-weight: bold;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ink-soft);
         }
-        select, input {
+
+        /* Override for inline checkbox labels */
+        input[type="checkbox"] + label,
+        .form-group > div > label {
+            display: inline;
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            text-transform: none;
+            letter-spacing: normal;
+            color: var(--ink);
+        }
+
+        select, input[type="text"], input[type="number"], input[type="range"] {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--line-2);
             border-radius: 4px;
             box-sizing: border-box;
+            background-color: var(--paper-2);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
         }
+
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            outline: 2px solid var(--blue);
+            outline-offset: 1px;
+            border-color: var(--blue);
+        }
+
+        /* Numeric inputs use mono font */
+        input[type="number"] {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Buttons ── */
         button {
-            background-color: #4CAF50;
-            color: white;
+            background-color: var(--green);
+            color: #fff;
             border: none;
             padding: 10px 15px;
             border-radius: 4px;
             cursor: pointer;
             margin-top: 5px;
             width: 100%;
-            font-size: 16px;
+            font-size: 0.95rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            transition: background-color 0.15s ease;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: var(--green-dk);
         }
+
+        /* Download button — primary/ink */
+        #downloadBtn {
+            background-color: var(--ink);
+        }
+
+        #downloadBtn:hover {
+            background-color: var(--blue);
+        }
+
+        /* Clear gallery — destructive */
+        #clearGalleryBtn {
+            background-color: var(--red);
+        }
+
+        #clearGalleryBtn:hover {
+            background-color: #8c2d22;
+        }
+
+        /* Add to gallery — blue accent */
+        #addGalleryBtn {
+            background-color: var(--blue);
+        }
+
+        #addGalleryBtn:hover {
+            background-color: var(--blue-dk);
+        }
+
+        /* ── Gallery ── */
         .gallery {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 20px;
         }
+
         .gallery-item {
-            border: 1px solid #ddd;
+            border: 1px solid var(--line);
             padding: 10px;
-            border-radius: 4px;
+            border-radius: 8px;
             width: calc(33% - 10px);
             text-align: center;
-            background-color: white;
+            background-color: var(--paper-2);
         }
+
         .gallery-item img {
             max-width: 100%;
-            border: 1px solid #eee;
+            border: 1px solid var(--line);
+            border-radius: 4px;
         }
+
         .gallery-item button {
             margin-top: 5px;
-            background-color: #2196F3;
-            font-size: 14px;
+            background-color: var(--blue);
+            font-size: 0.82rem;
             padding: 5px 10px;
         }
+
         .gallery-item button:hover {
-            background-color: #0b7dda;
+            background-color: var(--blue-dk);
         }
+
+        /* ── Misc ── */
         .subform {
             margin-left: 15px;
             padding-left: 10px;
-            border-left: 2px solid #eee;
+            border-left: 2px solid var(--line);
         }
+
         hr {
             margin: 20px 0;
             border: none;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid var(--line);
         }
+
         .color-picker {
             display: flex;
             gap: 10px;
         }
+
         .color-option {
             width: 30px;
             height: 30px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
         }
+
         .color-option.selected {
-            border-color: #333;
+            border-color: var(--ink);
+            box-shadow: 0 0 0 3px var(--paper-2), 0 0 0 4px var(--ink);
         }
+
         .canvas-size {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
+
+        .canvas-size span {
+            color: var(--ink-soft);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+        }
+
         .canvas-size input {
             flex: 1;
         }

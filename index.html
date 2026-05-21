@@ -3,891 +3,772 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Blindness: Why Video-Language Models Can't See What Humans Can?</title>
+  <title>Time Blindness: Why Video-Language Models Can't See What Humans Can — CVPR 2026</title>
+  <meta name="description" content="SpookyBench: a benchmark of time-only stimuli where humans score 98% and every video-language model scores 0%. CVPR 2026.">
+  <link rel="icon" href="static/timeblind_logo.png">
+
+  <!-- Fonts: match the poster -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
+    /* ============ DESIGN TOKENS (from the poster) ============ */
     :root {
-      /* Dark theme (default) */
-      --bg-color: #0a0a0a;
-      --text-color: #f5f5f5;
-      --accent-color: #3a86ff;
-      --secondary-color: #8338ec;
-      --section-bg: #1a1a1a;
-      --border-color: #333;
-      --gradient: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
-      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      --author-text: #ccc;
+      --ink:        #1A1F26;
+      --ink-2:      #2E3845;
+      --ink-soft:   #5A6573;
+      --paper:      #FBF8F1;   /* cream */
+      --paper-2:    #F2ECDD;
+      --paper-3:    #FFFFFF;
+      --blue:       #1F4E79;
+      --blue-dk:    #143659;
+      --green:      #4A7E1A;
+      --green-dk:   #355C13;
+      --red:        #B23A2C;
+      --line:       #E2DBC8;
+      --line-2:     #C8BFA8;
+      --stage:      #0E1116;   /* dark frame for noise stimuli */
+      --maxw:       1080px;
     }
-    
-    [data-theme="light"] {
-      /* Light theme */
-      --bg-color: #ffffff;
-      --text-color: #2c2c2c;
-      --accent-color: #2563eb;
-      --secondary-color: #7c3aed;
-      --section-bg: #f8fafc;
-      --border-color: #e2e8f0;
-      --gradient: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
-      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      --author-text: #64748b;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background: var(--bg-color);
-      background-image: 
-        radial-gradient(circle at 20% 20%, rgba(58, 134, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(131, 56, 236, 0.1) 0%, transparent 50%);
-      color: var(--text-color);
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--paper);
+      background-image:
+        radial-gradient(circle at 12% 8%, rgba(74,126,26,0.05) 0%, transparent 42%),
+        radial-gradient(circle at 88% 92%, rgba(31,78,121,0.05) 0%, transparent 45%);
+      background-attachment: fixed;
+      color: var(--ink);
       line-height: 1.6;
       min-height: 100vh;
-      transition: all 0.3s ease;
+      -webkit-font-smoothing: antialiased;
     }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 2rem;
+
+    .container { max-width: var(--maxw); margin: 0 auto; padding: 0 1.5rem; }
+
+    a { color: var(--blue); }
+
+    /* ============ TOP VENUE STRIP ============ */
+    .topstrip {
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.5);
     }
-    
-    /* Theme toggle button */
-    .theme-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--gradient);
-      border: none;
-      border-radius: 50px;
-      padding: 12px 16px;
-      color: white;
-      cursor: pointer;
-      font-size: 1rem;
-      z-index: 1000;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    .topstrip-inner {
+      max-width: var(--maxw); margin: 0 auto; padding: 0.65rem 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.5rem;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--ink-soft);
     }
-    
-    .theme-toggle:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    .topstrip .venue { color: var(--ink); }
+    .topstrip .dot {
+      display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--green); margin: 0 9px 2px; vertical-align: middle;
     }
-    
-    header {
-      text-align: center;
-      padding: 4rem 0 2rem;
-      margin-bottom: 2rem;
+    .project-tag {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.66rem;
+      letter-spacing: 0; text-transform: none; color: var(--ink);
     }
-    
-    h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.2;
+    .project-tag .pulse {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 0 0 rgba(74,126,26,0.5); animation: pulse 2.4s infinite;
     }
-    
-    .title-logo {
-      width: 60px;
-      height: 60px;
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(74,126,26,0.45); }
+      70% { box-shadow: 0 0 0 7px rgba(74,126,26,0); }
+      100% { box-shadow: 0 0 0 0 rgba(74,126,26,0); }
     }
-    
-    /* Publication links section */
+
+    /* ============ HEADER ============ */
+    header { text-align: center; padding: 3.5rem 0 1.5rem; }
+
+    .eyebrow {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--ink-soft); font-weight: 600; margin-bottom: 1.1rem;
+    }
+
+    h1.title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      line-height: 0.98; letter-spacing: -2px;
+      font-weight: 900; color: var(--ink);
+      font-variation-settings: "opsz" 144;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      justify-content: center; flex-wrap: wrap;
+    }
+    h1.title .amp { color: var(--green-dk); }
+    .title-logo { width: clamp(44px, 7vw, 64px); height: auto; }
+
+    .sub {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.25rem, 2.6vw, 1.8rem);
+      line-height: 1.2; letter-spacing: -0.3px;
+      color: var(--ink-2); font-weight: 400; font-style: italic;
+      max-width: 740px; margin: 1.2rem auto 0;
+      font-variation-settings: "opsz" 60;
+    }
+    .sub .ul { border-bottom: 2px solid var(--green); padding-bottom: 1px; }
+
+    .authors {
+      font-family: 'Inter', sans-serif; font-weight: 600;
+      font-size: 1.05rem; color: var(--ink);
+      margin: 1.8rem auto 0; line-height: 1.7; max-width: 820px;
+    }
+    .authors a { color: var(--ink); text-decoration: none; transition: color 0.2s ease; }
+    .authors a:hover { color: var(--green-dk); }
+    .authors sup { font-size: 0.7em; color: var(--green-dk); font-weight: 700; }
+    .authors .sep { color: var(--line-2); margin: 0 0.5rem; }
+    .affils {
+      font-size: 0.92rem; color: var(--ink-soft); margin-top: 0.6rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .affils sup { color: var(--green-dk); font-weight: 700; }
+
+    /* ============ PUBLICATION LINKS ============ */
     .publication-links {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2rem 0;
-      flex-wrap: wrap;
+      display: flex; justify-content: center; gap: 0.75rem;
+      margin: 2rem 0 0; flex-wrap: wrap;
     }
-    
-    .link-block a {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-    
     .external-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--section-bg);
-      color: var(--text-color);
-      padding: 0.75rem 1.5rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      background: var(--ink); color: var(--paper);
+      padding: 0.7rem 1.4rem; border-radius: 50px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.3px;
+      transition: background 0.2s ease, transform 0.1s ease;
     }
-    
-    .external-link:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      background: var(--gradient);
-      color: white;
+    .external-link:hover { background: var(--blue); transform: translateY(-2px); }
+    .external-link .icon { font-size: 1.05rem; }
+
+    /* ============ LOGO ROW ============ */
+    .logo-row {
+      display: flex; justify-content: center; align-items: center;
+      gap: 1.8rem; flex-wrap: wrap; margin: 2.6rem 0 0;
     }
-    
-    .external-link:hover .icon {
-      color: white;
+    .logo-row img { height: 42px; width: auto; display: block; filter: saturate(0.96); }
+    .logo-row .cvpr { height: 50px; }
+    .logo-sep { width: 1px; height: 34px; background: var(--line-2); }
+    .logo-sep.solid { background: var(--ink-soft); height: 40px; }
+
+    /* ============ HERO STAT ============ */
+    .hero-stat {
+      display: grid; grid-template-columns: 1fr 1px 1fr;
+      gap: 1.5rem; align-items: center; max-width: 640px;
+      margin: 2.8rem auto 0;
+      background: var(--paper-3); border: 1px solid var(--line);
+      border-radius: 14px; padding: 1.5rem 1.8rem;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.05);
     }
-    
-    .external-link .icon {
-      font-size: 1.1rem;
+    .hero-divider { background: var(--line); height: 78%; align-self: center; }
+    .hero-half { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .hero-num {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(2.8rem, 6vw, 3.6rem); line-height: 0.9;
+      letter-spacing: -1.5px; font-weight: 900;
+      font-variation-settings: "opsz" 144;
     }
-    
-    /* Authors section */
-    .authors-section {
-      text-align: center;
-      margin: 3rem 0;
-      padding: 2rem;
-      background: var(--section-bg);
-      border-radius: 16px;
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border-color);
+    .hero-num.green { color: var(--green-dk); }
+    .hero-num.red { color: var(--red); }
+    .hero-label {
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem;
+      letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+      color: var(--ink); margin-top: 0.5rem;
     }
-    
-    .authors-title {
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
-      color: var(--accent-color);
-      font-weight: 600;
-    }
-    
-    .authors-list {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-    
-    .author {
-      color: var(--author-text);
-      font-size: 1.1rem;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-    
-    .author:hover {
-      color: var(--accent-color);
-    }
-    
-    .equal-contrib {
-      font-size: 0.9rem;
-      color: var(--author-text);
-      font-style: italic;
-      margin-bottom: 2rem;
-    }
-    
-    .university-logos {
-      display: flex;
-      justify-content: center;
-      gap: 5rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    
-    .university-logo {
-      height: 60px;
-      width: auto;
-      opacity: 0.8;
-      transition: opacity 0.3s ease;
-    }
-    
-    .university-logo:hover {
-      opacity: 1;
-    }
-    
-    .subtitle {
-      font-size: 1.2rem;
-      color: var(--author-text);
-      margin-bottom: 2rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
+    .hero-sub { font-size: 0.78rem; color: var(--ink-soft); margin-top: 0.2rem; }
+
+    /* ============ CTA ============ */
+    .cta-wrap { text-align: center; margin: 2.4rem 0 0; }
     .cta-button {
-      display: inline-block;
-      background: var(--gradient);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-      box-shadow: var(--card-shadow);
-      margin-top: 1rem;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--green); color: #fff;
+      padding: 0.9rem 1.8rem; border-radius: 50px;
+      text-decoration: none; font-weight: 600; font-size: 1.05rem;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: background 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 8px 24px rgba(74,126,26,0.22);
     }
-    
-    .cta-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 40px rgba(58, 134, 255, 0.4);
+    .cta-button:hover { background: var(--green-dk); transform: translateY(-2px); }
+
+    /* ============ SECTIONS ============ */
+    main { padding: 1rem 0 2rem; }
+    .sect {
+      background: var(--paper-3); border: 1px solid var(--line);
+      border-radius: 14px; padding: 1.8rem 2rem; margin: 1.4rem 0;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.04);
     }
-    
-    h2 {
-      font-size: 2rem;
-      margin: 3rem 0 1.5rem;
-      color: var(--accent-color);
-      text-align: center;
+    .sect.tint { background: var(--paper-2); }
+    .sect.accent-green { border-left: 4px solid var(--green); }
+    .sect.accent-blue { border-left: 4px solid var(--blue); }
+
+    .sect-head {
+      display: flex; align-items: baseline; gap: 0.7rem;
+      margin-bottom: 1rem; padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--line-2);
     }
-    
-    p {
-      margin-bottom: 1.5rem;
-      font-size: 1.1rem;
-      color: var(--author-text);
+    .sect-num {
+      font-family: 'Fraunces', Georgia, serif; font-size: 1.4rem;
+      font-weight: 700; line-height: 1; color: var(--ink-soft);
+      font-variation-settings: "opsz" 144; letter-spacing: -0.5px;
+      font-feature-settings: "tnum";
     }
-    
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
+    .sect-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem;
+      font-weight: 700; letter-spacing: 0.4px; color: var(--ink);
+      text-transform: uppercase; flex: 1;
     }
-    
-    .video-card {
-      background: var(--section-bg);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: var(--card-shadow);
-      transition: all 0.3s ease;
-      border: 1px solid var(--border-color);
+
+    .sect p { margin: 0 0 0.9rem; font-size: 1.02rem; color: var(--ink); line-height: 1.6; }
+    .sect p:last-child { margin-bottom: 0; }
+    .sect strong { color: var(--ink); font-weight: 700; }
+    .sect em { color: var(--blue-dk); font-style: italic; font-weight: 500; }
+    .lead {
+      font-family: 'Fraunces', Georgia, serif !important;
+      font-style: italic; font-size: 1.25rem !important; line-height: 1.4;
+      color: var(--ink-2) !important; font-variation-settings: "opsz" 36;
     }
-    
-    .video-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+
+    ul.tight { margin: 0.6rem 0 0; padding-left: 1.3rem; font-size: 0.98rem; line-height: 1.55; }
+    ul.tight li { margin-bottom: 0.4rem; color: var(--ink); }
+    ul.tight li::marker { color: var(--green-dk); }
+
+    /* ============ FIGURES ============ */
+    figure { margin: 0.4rem 0; }
+    .figframe {
+      background: #fff; border: 1px solid var(--line); padding: 6px;
+      border-radius: 8px; overflow: hidden;
     }
-    body.light-mode .video-card:hover {
-        box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    .figframe img { width: 100%; display: block; border-radius: 4px; }
+    figcaption { font-size: 0.9rem; color: var(--ink-soft); margin-top: 0.65rem; line-height: 1.5; }
+    figcaption b { color: var(--ink); font-weight: 700; }
+
+    /* ============ TABLES ============ */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 0.95rem;
+      margin: 0.4rem 0; font-variant-numeric: tabular-nums;
     }
-    
-    .video-card h3 {
-      color: var(--accent-color);
-      margin-bottom: 1rem;
-      font-size: 1.3rem;
+    table th, table td { padding: 0.5rem 0.7rem; text-align: left; border-bottom: 1px solid var(--line); }
+    table th {
+      background: var(--ink); color: var(--paper); font-weight: 700;
+      font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase;
+      font-family: 'Space Grotesk', sans-serif; white-space: nowrap;
     }
-    
-    .video-card video {
-      width: 100%;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      background: #000;
+    table td.num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+    table td.zero { color: var(--red); font-weight: 700; }
+    table td.win { color: var(--green-dk); font-weight: 700; }
+    table .group-row td {
+      background: var(--paper-2); color: var(--ink-soft); font-weight: 700;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px;
+      font-family: 'Space Grotesk', sans-serif;
     }
-    body.light-mode .video-card video { background: #eee; }
-    
-    .video-description {
-      color: var(--author-text);
-      font-size: 0.95rem;
-      line-height: 1.5;
+    .table-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.5rem; }
+
+    /* ============ STIMULUS FAMILIES (videos) ============ */
+    .stim-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem; margin-top: 0.4rem;
     }
-    
-    .diagram-container {
-      display: flex;
-      flex-direction: column;
-      gap: 3rem;
-      margin: 3rem 0;
+    .stim-card {
+      background: var(--paper-2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 0.6rem; display: flex; flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    
-    .diagram {
-      background: var(--section-bg);
-      border-radius: 16px;
-      padding: 2.5rem;
-      box-shadow: var(--card-shadow);
-      position: relative;
-      border: 1px solid var(--border-color);
+    .stim-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,0.08); }
+    .stim-frame {
+      background: var(--stage); border-radius: 6px; overflow: hidden;
+      aspect-ratio: 16/9; border: 1px solid var(--line);
     }
-    
-    .diagram-title {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-      color: var(--accent-color);
-      font-weight: 600;
+    .stim-frame video { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--stage); }
+    .stim-tag {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 0.82rem; letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--ink); margin-top: 0.6rem;
     }
-    
-    .flow-diagram {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.5rem;
+    .stim-pct {
+      font-family: 'JetBrains Mono', monospace; color: var(--green-dk);
+      font-size: 0.78rem; margin-left: 3px; letter-spacing: 0; font-weight: 500; text-transform: none;
     }
-    
-    .flow-item {
-      flex: 1;
-      min-width: 200px;
-      background: var(--bg-color);
-      padding: 1.5rem;
-      border-radius: 12px;
-      text-align: center;
-      position: relative;
-      border: 1px solid var(--border-color);
-      transition: all 0.3s ease;
+    .stim-desc { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.25rem; line-height: 1.45; }
+    .stim-desc b { color: var(--ink); font-weight: 700; }
+
+    /* ============ CALLOUT ============ */
+    .callout {
+      background: var(--paper-2); border-left: 4px solid var(--green);
+      border-radius: 4px; padding: 0.9rem 1.1rem; margin-top: 1rem;
+      font-size: 0.98rem; color: var(--ink); line-height: 1.5;
     }
-    
-    .flow-item:hover {
-      background: var(--section-bg);
-      transform: translateY(-2px);
+    .callout strong { color: var(--ink); }
+
+    /* ============ MOTION-OVERLAY BARS ============ */
+    .aug-chart { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.8rem; }
+    .aug-row { display: grid; grid-template-columns: 110px 1fr; gap: 0.8rem; align-items: center; }
+    .aug-row-label { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--ink); }
+    .aug-bars { display: flex; flex-direction: column; gap: 0.4rem; }
+    .aug-bar-row { display: grid; grid-template-columns: 120px 1fr 44px; gap: 0.6rem; align-items: center; }
+    .aug-state { font-size: 0.78rem; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; }
+    .aug-bar-track {
+      height: 12px; background: var(--paper-2); border-radius: 3px; overflow: hidden;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,0.06);
     }
-    
-    .flow-item::after {
-      content: "→";
-      position: absolute;
-      right: -1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.5rem;
-      color: var(--accent-color);
+    .aug-bar-fill { height: 100%; border-radius: 3px; width: 0; transition: width 1s ease; }
+    .aug-bar-fill.baseline { background: var(--red); }
+    .aug-bar-fill.augmented { background: var(--green); }
+    .aug-num { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: right; font-weight: 600; color: var(--ink); }
+    .aug-num.zero { color: var(--red); font-weight: 800; }
+
+    /* ============ METRIC LEGEND ============ */
+    .metric-legend {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.7rem 1.2rem; margin-top: 1rem; padding-top: 0.9rem;
+      border-top: 1px dashed var(--line-2);
     }
-    
-    .flow-item:last-child::after {
-      display: none;
+    .metric-item { display: flex; gap: 0.6rem; align-items: flex-start; }
+    .metric-icon {
+      flex: 0 0 34px; height: 34px; background: var(--ink); border-radius: 6px;
+      color: var(--paper); display: flex; align-items: center; justify-content: center; font-size: 1rem;
     }
-    
-    .comparison {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 2rem;
-      margin-top: 2rem;
+    .metric-name {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 0.74rem; letter-spacing: 1px; text-transform: uppercase; color: var(--ink);
     }
-    
-    .comparison-item {
-      background: var(--bg-color);
-      padding: 2rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      transition: all 0.3s ease;
+    .metric-desc { font-size: 0.84rem; color: var(--ink-soft); line-height: 1.35; margin-top: 1px; }
+
+    /* ============ MINI FIG (threshold) ============ */
+    .mini-fig {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: center;
     }
-    
-    .comparison-item:hover {
-      background: var(--section-bg);
+    .mini-fig-tag {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 0.74rem; letter-spacing: 1.4px; text-transform: uppercase;
+      color: var(--ink-soft); margin-bottom: 0.4rem;
     }
-    
-    .comparison-title {
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-      color: var(--accent-color);
-      font-weight: 500;
+    .mini-fig-cap { margin: 0; font-size: 0.95rem; color: var(--ink); line-height: 1.5; }
+    .mini-fig-cap b { color: var(--ink); font-weight: 700; }
+
+    /* ============ TAKEAWAYS ============ */
+    .takeaways { background: var(--ink); color: var(--paper); border: none; }
+    .takeaways .sect-head { border-color: rgba(255,255,255,0.2); }
+    .takeaways .sect-num { color: #A4C77A; }
+    .takeaways .sect-title { color: #fff; }
+    .takeaways p, .takeaways ul, .takeaways li { color: var(--paper); }
+    .takeaways ul { padding-left: 1.3rem; margin: 0.4rem 0 0; font-size: 1.02rem; line-height: 1.55; }
+    .takeaways ul li { margin-bottom: 0.5rem; }
+    .takeaways ul li::marker { color: #A4C77A; }
+    .takeaways ul li strong { color: #fff; }
+    .takeaways em { color: #C8E1A0; font-style: italic; }
+
+    /* ============ CITATION / FOOTER ============ */
+    .citation { margin-top: 1.4rem; }
+    .bibtex {
+      background: var(--stage); color: #E8E1D0; border-radius: 10px;
+      padding: 1.1rem 1.3rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem; line-height: 1.55; overflow-x: auto; white-space: pre;
+      border: 1px solid var(--line);
     }
-    
-    .comparison-item ul {
-      margin: 1rem 0;
-      padding-left: 1.5rem;
-    }
-    
-    .comparison-item li {
-      margin-bottom: 0.5rem;
-      color: var(--text-color);
-    }
-    
-    .icon {
-      font-size: 2.5rem;
-      margin-bottom: 0rem;
-      color: var(--accent-color);
-    }
-    
-    .depth-example {
-      display: flex;
-      justify-content: space-between;
-      gap: 2rem;
-      margin-top: 2rem;
-      flex-wrap: wrap;
-    }
-    
-    .depth-item {
-      flex: 1;
-      min-width: 250px;
-      background: var(--bg-color);
-      padding: 1.5rem;
-      border-radius: 12px;
-      text-align: center;
-      border: 1px solid var(--border-color);
-      transition: all 0.3s ease;
-    }
-    
-    .depth-item:hover {
-      background: var(--section-bg);
-    }
-    
-    .depth-img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      background: var(--section-bg);
-      aspect-ratio: 16/9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      color: var(--author-text);
-      border: 1px solid var(--border-color);
-    }
-    
-    .key-points {
-      margin-top: 3rem;
-    }
-    
-    .point {
-      display: flex;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-      align-items: flex-start;
-      background: var(--section-bg);
-      padding: 1.5rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      transition: all 0.3s ease;
-    }
-    
-    .point:hover {
-      background: var(--bg-color);
-    }
-    
-    .point-number {
-      background: var(--gradient);
-      color: white;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      flex-shrink: 0;
-      font-size: 1.1rem;
-    }
-    
-    .point h3 {
-      color: var(--accent-color);
-      margin-bottom: 0.5rem;
-    }
-    
     footer {
-      margin-top: 4rem;
-      text-align: center;
-      color: var(--author-text);
-      font-size: 0.9rem;
-      padding: 2rem 0;
-      border-top: 1px solid var(--border-color);
+      margin-top: 2.5rem; text-align: center; color: var(--ink-soft);
+      font-size: 0.85rem; padding: 2rem 0; border-top: 1px solid var(--line);
+      font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px;
     }
-    
-    .code-snippet {
-      background: var(--bg-color);
-      padding: 1.5rem;
-      border-radius: 8px;
-      font-family: 'Fira Code', monospace;
-      margin: 1rem 0;
-      overflow-x: auto;
-      font-size: 0.9rem;
-      border-left: 3px solid var(--accent-color);
-      border: 1px solid var(--border-color);
-    }
-    
-    @media (max-width: 768px) {
-      .container {
-        padding: 0 1rem;
-      }
-      
-      .theme-toggle {
-        top: 10px;
-        right: 10px;
-        padding: 10px 12px;
-        font-size: 0.9rem;
-      }
-      
-      .publication-links {
-        gap: 0.5rem;
-      }
-      
-      .external-link {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-      }
-      
-      .authors-list {
-        gap: 1rem;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      /* .university-logos {
-        gap: 15rem;
-      } */
-      
-      .university-logo {
-        height: 40px;
-      }
-      
-      .title-logo {
-        width: 50px;
-        height: 50px;
-      }
-      
-      .flow-diagram {
-        flex-direction: column;
-      }
-      
-      .flow-item::after {
-        content: "↓";
-        right: 50%;
-        top: auto;
-        bottom: -1.5rem;
-        transform: translateX(50%);
-      }
-      
-      .video-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .comparison {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    .fade-in {
-      animation: fadeIn 0.8s ease-out forwards;
-    }
-    
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    footer .dot { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--green); margin: 0 8px 2px; vertical-align: middle; }
+
+    /* ============ ANIMATIONS ============ */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 720px) {
+      .sect { padding: 1.4rem 1.2rem; }
+      .authors .sep { display: none; }
+      .authors a { display: inline-block; margin: 0.15rem 0.6rem; }
+      .hero-stat { grid-template-columns: 1fr; gap: 1rem; }
+      .hero-divider { width: 78%; height: 1px; justify-self: center; }
+      .mini-fig { grid-template-columns: 1fr; }
+      .aug-row { grid-template-columns: 1fr; gap: 0.4rem; }
+      .aug-bar-row { grid-template-columns: 90px 1fr 40px; }
+      .logo-row { gap: 1.1rem; }
+      .logo-row img { height: 34px; }
+      .logo-row .cvpr { height: 40px; }
+      .logo-sep { display: none; }
     }
   </style>
 </head>
 <body>
-  <!-- Theme toggle button -->
-  <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-    <i class="fas fa-moon" id="themeIcon"></i>
-  </button>
 
-  <div class="container">
-    <header class="fade-in">
-      <h1> <img src="static/timeblind_logo.png" width="50"> Time Blindness: Why Video-Language Models Can't See What Humans Can? </h1>
-      
-      <!-- Publication Links -->
-      <div class="publication-links">
-        <span class="link-block">
-          <a href="https://arxiv.org/abs/2505.24867" class="external-link button is-normal is-rounded is-dark">
-            <span class="icon">
-              <i class="fas fa-file-pdf"></i>
-            </span>
-            <span>Paper</span>
-          </a>
-        </span>
-        
-        <span class="link-block">
-          <a href="https://github.com/TimeBlindness/time-blindness" class="external-link button is-normal is-rounded is-dark">
-            <span class="icon">
-              <i class="fab fa-github"></i>
-            </span>
-            <span>Code</span>
-          </a>
-        </span>
-        
-        <span class="link-block">
-            <a href="https://huggingface.co/datasets/timeblindness/spooky-bench"
-                class="external-link button is-normal is-rounded is-dark">
-                <span class="icon" style="font-size:18px">🤗</span>
-                <span>Dataset</span>
-            </a>
-        </span>
-      </div>
-      
-      <!-- Authors Section -->
-      <div class="authors-section">
-        <h3 class="authors-title">Authors</h3>
-        <div class="authors-list">
-          <a href="https://ujjwal9.com" class="author">Ujjwal Upadhyay<sup>*</sup></a>
-          <a href="https://mukul54.github.io/" class="author">Mukul Ranjan<sup>*</sup></a>
-          <a href="https://zhiqiangshen.com/" class="author">Zhiqiang Shen</a>
-          <a href="https://www.mohamed-elhoseiny.com/" class="author">Mohamed Elhoseiny</a>
-        </div>
-        <div class="equal-contrib">
-          <sup>*</sup>Equal Contribution
-        </div>
-        
-        <!-- University Logos - You'll need to replace these with actual logo paths -->
-        <div class="university-logos">
-          <img src="static/logos/kaust_logo.png" alt="KAUST" class="university-logo">
-          <img src="static/logos/mbzuai_logo.png" alt="MBZUAI" class="university-logo">
-        </div>
-      </div>
-      
-      <p class="subtitle">Explore how noise animation systems create dynamic visual effects through depth maps and sophisticated masking techniques.</p>
-      <a href="generate.html" class="cta-button">🎨 Try the Animation Studio</a>
-    </header>
-    
-    <section class="video-showcase fade-in">
-      <h2>Examples from Our Collection</h2>
-      <div class="video-grid">
-        <div class="video-card">
-          <h3>📝 Word Animations</h3>
-          <video controls loop muted>
-            <source src="assets/words/1b3df5a029af.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <p class="video-description">Text-based animations where noise patterns create dynamic visual effects around words and typography.</p>
-        </div>
-        
-        <div class="video-card">
-          <h3>🔷 Shape Animations</h3>
-          <video controls loop muted>
-            <source src="assets/shapes/08ab8fdbbe48.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <p class="video-description">Geometric shapes interacting with animated noise to create mesmerizing patterns and depth effects.</p>
-        </div>
-        
-        <div class="video-card">
-          <h3>🖼️ Image Animations</h3>
-          <video controls loop muted>
-            <source src="assets/images/01fd4aa5faba.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <p class="video-description">Complex images enhanced with depth-based noise animation to simulate motion parallax.</p>
-        </div>
-        
-        <div class="video-card">
-          <h3>🎬 Video Effects</h3>
-          <video controls loop muted>
-            <source src="assets/videos/4e28a735ca87.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <p class="video-description">Advanced video processing with dynamic noise overlays and depth-based animation control.</p>
-        </div>
-      </div>
-    </section>
-    
-    <div class="diagram-container">
-      <section class="diagram fade-in">
-        <h2 class="diagram-title">🔧 Basic Concept</h2>
-        <p>The system creates animated noise patterns that can interact with text, shapes, or images. When depth maps are used, the noise animation speed varies based on the brightness of each pixel in the depth map.</p>
-        
-        <div class="flow-diagram">
-          <div class="flow-item">
-            <div class="icon">📊</div>
-            <h3>Noise Generation</h3>
-            <p>Binary noise patterns are generated for both foreground and background</p>
-          </div>
-          <div class="flow-item">
-            <div class="icon">🔄</div>
-            <h3>Animation</h3>
-            <p>Noise patterns scroll in opposite directions</p>
-          </div>
-          <div class="flow-item">
-            <div class="icon">🎭</div>
-            <h3>Masking</h3>
-            <p>Content (text/shape/image) creates a mask to separate foreground and background</p>
-          </div>
-        </div>
-      </section>
-      
-      <section class="diagram fade-in">
-        <h2 class="diagram-title">⚙️ Two Operating Modes</h2>
-        
-        <div class="comparison">
-          <div class="comparison-item">
-            <h3 class="comparison-title">Standard Mode</h3>
-            <p>Without depth map, the system uses a binary mask:</p>
-            <ul>
-              <li>Text, shape, or image creates a mask</li>
-              <li>Foreground noise scrolls in one direction</li>
-              <li>Background noise scrolls in opposite direction</li>
-              <li>Creates visual separation between content and background</li>
-            </ul>
-            <div class="code-snippet">
-// Standard mode (no depth map)
-const isFG = maskData && maskData[i+3] > 0;
-let val;
-if (isFG) {
-  val = foregroundNoise[fgIdx];
-} else {
-  val = backgroundNoise[bgIdx];
-}
-            </div>
-          </div>
-          
-          <div class="comparison-item">
-            <h3 class="comparison-title">Depth Map Mode</h3>
-            <p>With depth map enabled:</p>
-            <ul>
-              <li>Single noise layer is used</li>
-              <li>Depth map controls animation speed at each pixel</li>
-              <li>Brighter areas in depth map = faster animation</li>
-              <li>Creates illusion of depth through motion parallax</li>
-            </ul>
-            <div class="code-snippet">
-// Depth map mode
-if (depthMapData) {
-  const d = depthMapData[i];
-  const depthVal = d / 255;
-  speedFactor = 1 + depthVal * depthScale;
-}
-const newY = Math.floor((y + backgroundOffset*speedFactor) % h);
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- <section class="diagram fade-in">
-        <h2 class="diagram-title">🗺️ Depth Map Visualization</h2>
-        <p>The depth map controls how fast the noise animates at each pixel. Brighter areas in the depth map represent "closer" objects and animate faster.</p>
-        
-        <div class="depth-example">
-          <div class="depth-item">
-            <div class="depth-img">Depth Map Image (Grayscale)</div>
-            <p>Brightness represents depth - white is "close", black is "far"</p>
-          </div>
-          <div class="depth-item">
-            <div class="depth-img">Resulting Animation</div>
-            <p>Noise scrolls at different speeds based on depth values</p>
-          </div>
-        </div>
-      </section> -->
-      
-      <section class="key-points fade-in">
-        <h2>🔑 Key Technical Components</h2>
-        
-        <div class="point">
-          <div class="point-number">1</div>
-          <div>
-            <h3>Noise Generation</h3>
-            <p>Binary noise patterns (black/white pixels) are generated with controllable density and speckle size. These patterns are scrolled to create animation.</p>
-          </div>
-        </div>
-        
-        <div class="point">
-          <div class="point-number">2</div>
-          <div>
-            <h3>Content Masking</h3>
-            <p>In standard mode, text, shapes, or images create a binary mask that determines which noise pattern (foreground or background) is displayed at each pixel.</p>
-          </div>
-        </div>
-        
-        <div class="point">
-          <div class="point-number">3</div>
-          <div>
-            <h3>Depth-Based Animation</h3>
-            <p>When depth map is enabled, the brightness of each pixel in the depth map controls how fast the noise animates at that position, creating a parallax effect.</p>
-          </div>
-        </div>
-        
-        <div class="point">
-          <div class="point-number">4</div>
-          <div>
-            <h3>Background Color Option</h3>
-            <p>The "Remove Background Noise" option replaces noise with a solid color in background areas or in areas below a certain depth threshold.</p>
-          </div>
-        </div>
-      </section>
+  <!-- ============ TOP VENUE STRIP ============ -->
+  <div class="topstrip">
+    <div class="topstrip-inner">
+      <span><span class="venue">CVPR 2026</span> <span class="dot"></span> Denver, Colorado</span>
+      <span class="project-tag"><span class="pulse"></span> SpookyBench &middot; time-only benchmark</span>
     </div>
-    
-    <!-- <footer>
-      <p>&copy; 2025 Time Blindness Research Project. Exploring the intersection of visual perception and machine learning.</p>
-    </footer> -->
   </div>
 
+  <div class="container">
+
+    <!-- ============ HEADER ============ -->
+    <header class="fade-in">
+      <div class="eyebrow">Vision-Language Models &middot; Temporal Reasoning &middot; Benchmark</div>
+      <h1 class="title">
+        <img src="static/timeblind_logo.png" alt="" class="title-logo">
+        Time Blindness<span class="amp">.</span>
+      </h1>
+      <p class="sub">Why Video-Language Models <span class="ul">can't see</span> what humans can.</p>
+
+      <div class="authors">
+        <a href="https://ujjwal9.com">Ujjwal Upadhyay<sup>1,3,*</sup></a><span class="sep">&middot;</span>
+        <a href="https://mukul54.github.io/">Mukul Ranjan<sup>2,*</sup></a><span class="sep">&middot;</span>
+        <a href="https://zhiqiangshen.com/">Zhiqiang Shen<sup>2,&dagger;</sup></a><span class="sep">&middot;</span>
+        <a href="https://www.mohamed-elhoseiny.com/">Mohamed Elhoseiny<sup>1,&dagger;</sup></a>
+      </div>
+      <div class="affils">
+        <sup>1</sup>KAUST &nbsp;&nbsp; <sup>2</sup>VILA Lab, MBZUAI &nbsp;&nbsp; <sup>3</sup>DocPanel Technologies
+        &nbsp;&middot;&nbsp; <sup>*</sup>Equal contribution &nbsp;&middot;&nbsp; <sup>&dagger;</sup>Corresponding authors
+      </div>
+
+      <!-- Publication Links -->
+      <div class="publication-links">
+        <a href="https://arxiv.org/abs/2505.24867" class="external-link">
+          <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span>
+        </a>
+        <a href="https://github.com/TimeBlindness/time-blindness" class="external-link">
+          <span class="icon"><i class="fab fa-github"></i></span><span>Code</span>
+        </a>
+        <a href="https://huggingface.co/datasets/timeblindness/spooky-bench" class="external-link">
+          <span class="icon" style="font-size:18px">&#129303;</span><span>Dataset</span>
+        </a>
+      </div>
+
+      <!-- Logos: affiliations + venue -->
+      <div class="logo-row">
+        <img src="static/logos/kaust.svg" alt="KAUST">
+        <span class="logo-sep"></span>
+        <img src="static/logos/mbzuai.svg" alt="MBZUAI">
+        <span class="logo-sep"></span>
+        <img src="static/logos/docpanel.svg" alt="DocPanel">
+        <span class="logo-sep solid"></span>
+        <img src="static/logos/cvpr_logo.png" alt="CVPR 2026" class="cvpr">
+      </div>
+
+      <!-- Hero stat -->
+      <div class="hero-stat">
+        <div class="hero-half">
+          <div class="hero-num green">98%</div>
+          <div class="hero-label">Humans</div>
+          <div class="hero-sub">6 annotators &middot; perceptibility 4.7 / 5</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-half">
+          <div class="hero-num red">0%</div>
+          <div class="hero-label">Every Video-VLM</div>
+          <div class="hero-sub">25+ models &middot; 2 B&ndash;78 B &middot; open + closed</div>
+        </div>
+      </div>
+
+      <div class="cta-wrap">
+        <a href="generate.html" class="cta-button">&#127912; Try the Animation Studio</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- 01 The Question -->
+      <section class="sect fade-in">
+        <div class="sect-head"><span class="sect-num">01</span><span class="sect-title">The Question</span></div>
+        <p class="lead">If a video carries information only in <em>how</em> frames change over time &mdash; and each frame is pure noise &mdash; can today's Video-VLMs see it?</p>
+        <p>Nature already does this. Fireflies communicate through flash sequences, EEG pathologies emerge from temporal patterns, Morse code carries language without spatial form. Yet modern video understanding pipelines extract frame features first and treat time as an afterthought.</p>
+      </section>
+
+      <!-- 02 The Spatial-Reliance Gap -->
+      <section class="sect accent-blue fade-in">
+        <div class="sect-head"><span class="sect-num">02</span><span class="sect-title">The Spatial-Reliance Gap</span></div>
+        <figure class="figframe">
+          <img src="static/vlm_limitations.png" alt="Spatial reliance of VLMs">
+        </figure>
+        <figcaption><b>Frame sampling discards time.</b> Visual encoders bias toward spatial features (objects, layouts); temporal features (motion, causality) stay under-represented &mdash; opening the coherence gap we exploit.</figcaption>
+      </section>
+
+      <!-- 03 SpookyBench -->
+      <section class="sect accent-green fade-in">
+        <div class="sect-head"><span class="sect-num">03</span><span class="sect-title">SpookyBench &mdash; Time-Only Stimuli</span></div>
+        <p>A synthetic benchmark where <strong>each frame is pure noise</strong> and the content emerges only from <em>how</em> the noise moves.</p>
+        <ul class="tight">
+          <li><strong>451 videos</strong> &middot; 960&times;540 &middot; avg 7.1 s &middot; ~333 frames</li>
+          <li><strong>3 categories</strong>: Text (46.6%), Object Images (40.8%), Dynamic Scenes (12.6%)</li>
+          <li><strong>Opposing-motion</strong> noise for text/images; <strong>threshold-gated</strong> motion for depth videos</li>
+          <li>Generator releases an <em>indefinitely</em> extendable dataset</li>
+        </ul>
+      </section>
+
+      <!-- 05 Three Stimulus Families (playable) -->
+      <section class="sect fade-in">
+        <div class="sect-head"><span class="sect-num">04</span><span class="sect-title">See It For Yourself &mdash; Play the Stimuli</span></div>
+        <p>Each clip below is pure noise frame-by-frame. <strong>Play it</strong> and the content snaps into view; <strong>pause it</strong> and every frame is static. This is the effect VLMs cannot perceive.</p>
+        <div class="stim-grid">
+          <div class="stim-card">
+            <div class="stim-frame">
+              <video loop muted playsinline><source src="assets/words/1b3df5a029af.mp4" type="video/mp4"></video>
+            </div>
+            <div class="stim-tag">Text <span class="stim-pct">&middot; 46.6%</span></div>
+            <div class="stim-desc">Words encoded as opposing-motion noise. <b>210 videos.</b></div>
+          </div>
+          <div class="stim-card">
+            <div class="stim-frame">
+              <video loop muted playsinline><source src="assets/shapes/08ab8fdbbe48.mp4" type="video/mp4"></video>
+            </div>
+            <div class="stim-tag">Shapes <span class="stim-pct">&middot; object silhouettes</span></div>
+            <div class="stim-desc">Geometric forms revealed by co-moving pixels.</div>
+          </div>
+          <div class="stim-card">
+            <div class="stim-frame">
+              <video loop muted playsinline><source src="assets/images/01fd4aa5faba.mp4" type="video/mp4"></video>
+            </div>
+            <div class="stim-tag">Object Images <span class="stim-pct">&middot; 40.8%</span></div>
+            <div class="stim-desc">SAM2 silhouettes of generated objects. <b>184 videos.</b></div>
+          </div>
+          <div class="stim-card">
+            <div class="stim-frame">
+              <video loop muted playsinline><source src="assets/videos/4e28a735ca87.mp4" type="video/mp4"></video>
+            </div>
+            <div class="stim-tag">Dynamic Scenes <span class="stim-pct">&middot; 12.6%</span></div>
+            <div class="stim-desc">Depth maps from LaSOT / OTB2015. <b>57 videos.</b></div>
+          </div>
+        </div>
+        <figcaption><b>Each frame is noise.</b> Content emerges only when played &mdash; content-mask animation for text/objects, threshold-gated motion for depth scenes.</figcaption>
+      </section>
+
+      <!-- 06 How the signal hides -->
+      <section class="sect fade-in">
+        <div class="sect-head"><span class="sect-num">05</span><span class="sect-title">How the Signal Hides in Time</span></div>
+        <figure class="figframe">
+          <img src="static/framework.png" alt="Noise merging diagram">
+        </figure>
+        <figcaption><b>Opposing motion is the trick.</b> A content mask drives foreground noise up and background noise down. The human visual system groups co-moving pixels (Gestalt <i>common fate</i>) and the content emerges &mdash; only while the video plays. Pause it, and every frame looks like static.</figcaption>
+        <div class="mini-fig" style="margin-top:1.4rem;">
+          <div>
+            <div class="mini-fig-tag">SNR threshold &middot; step function</div>
+            <p class="mini-fig-cap"><b>Detection is a step function.</b> Below ~2.5 dB SNR, accuracy is ~0%; above it, accuracy jumps to &ge;85%. Comparable thresholds: images at 6.0 dB, dynamic scenes at 9.0 dB.</p>
+          </div>
+          <div class="callout" style="margin-top:0;">
+            <strong>Common fate.</strong> Humans bind pixels that move together into a single object &mdash; a temporal grouping mechanism current VLMs simply do not have.
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 Frames Carry Nothing -->
+      <section class="sect tint fade-in">
+        <div class="sect-head"><span class="sect-num">06</span><span class="sect-title">Frames Carry Nothing</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th style="text-align:right;">Basic SNR</th>
+                <th style="text-align:right;">Perceptual</th>
+                <th style="text-align:right;">Temp. Coh.</th>
+                <th style="text-align:right;">Motion C.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Images</td><td class="num">&minus;46.95</td><td class="num">&minus;47.28</td><td class="num">8.00</td><td class="num">7.17</td></tr>
+              <tr><td>Dynamic Scenes</td><td class="num">&minus;48.95</td><td class="num">&minus;63.43</td><td class="num win">21.91</td><td class="num">&minus;3.18</td></tr>
+              <tr><td>Text</td><td class="num">&minus;39.27</td><td class="num">&minus;49.18</td><td class="num">7.84</td><td class="num">8.26</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note"><b>Read:</b> Dynamic Scenes have the highest temporal coherence (21.9) yet near-zero motion contrast &mdash; the regime current VLMs cannot exploit.</p>
+        <div class="metric-legend">
+          <div class="metric-item">
+            <span class="metric-icon"><i class="fas fa-wave-square"></i></span>
+            <div><div class="metric-name">Basic SNR</div><div class="metric-desc">Motion energy &divide; frame variance.</div></div>
+          </div>
+          <div class="metric-item">
+            <span class="metric-icon"><i class="fas fa-eye"></i></span>
+            <div><div class="metric-name">Perceptual SNR</div><div class="metric-desc">Weighted to human contrast sensitivity.</div></div>
+          </div>
+          <div class="metric-item">
+            <span class="metric-icon"><i class="fas fa-arrows-left-right"></i></span>
+            <div><div class="metric-name">Temporal Coherence</div><div class="metric-desc">Motion vectors aligned over time.</div></div>
+          </div>
+          <div class="metric-item">
+            <span class="metric-icon"><i class="fas fa-adjust"></i></span>
+            <div><div class="metric-name">Motion Contrast</div><div class="metric-desc">Foreground vs background motion.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 The 0% Wall -->
+      <section class="sect fade-in">
+        <div class="sect-head"><span class="sect-num">07</span><span class="sect-title">The 0% Wall</span></div>
+        <p>Humans read these stimuli at <strong>98%</strong>. Every Video-VLM we evaluated &mdash; open or closed, 2 B to 78 B parameters, with or without chain-of-thought &mdash; collapses to a flat <strong>0%</strong>.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th style="text-align:right;">Direct Prompt</th>
+                <th style="text-align:right;">Chain&#8209;of&#8209;Thought</th>
+                <th style="text-align:right;">Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><b>Human Performance</b></td><td class="num win">98.0 &plusmn; 0.6</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+
+              <tr class="group-row"><td colspan="4">Open-Source Video-VLMs</td></tr>
+              <tr><td>VideoLLaMA3-7B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>VideoLLaMA3-2B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">2B</td></tr>
+              <tr><td>TimeChat-7B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>MiniGPT4-Video</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>MovieChat</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>Video-ChatGPT-7B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>VideoGPT-plus-Phi3-mini-4k</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>VILA1.5-13B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">13B</td></tr>
+              <tr><td>ShareGPT4Video-8B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">8B</td></tr>
+              <tr><td>VideoLLaMA2-7B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>Video-LLaVA</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>LLaVA-NeXT-Video</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">8B</td></tr>
+              <tr><td>InternVL2-40B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">40B</td></tr>
+              <tr><td>InternVL2-8B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">8B</td></tr>
+              <tr><td>InternVL2.5-78B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">78B</td></tr>
+              <tr><td>InternVL2.5-8B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">8B</td></tr>
+              <tr><td>InternVideo2.5-Chat-8B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">8B</td></tr>
+              <tr><td>InternVideo2-Chat-8B</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">8B</td></tr>
+              <tr><td>Qwen2-VL-2B-Instruct</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">2B</td></tr>
+              <tr><td>Qwen2-VL-7B-Instruct</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>Qwen2-VL-72B-Instruct</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">72B</td></tr>
+              <tr><td>Qwen2.5-VL-3B-Instruct</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">3B</td></tr>
+              <tr><td>Qwen2.5-VL-7B-Instruct</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">7B</td></tr>
+              <tr><td>Qwen2.5-VL-72B-Instruct</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">72B</td></tr>
+
+              <tr class="group-row"><td colspan="4">Closed-Source Frontier</td></tr>
+              <tr><td>Gemini 1.5 Pro</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">&mdash;</td></tr>
+              <tr><td>Gemini 2.0 Flash</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">&mdash;</td></tr>
+              <tr><td>GPT-4o</td><td class="num zero">0.0</td><td class="num zero">0.0</td><td class="num">&mdash;</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">Accuracy (%) on SpookyBench. Failure is invariant to model size, family, and prompting strategy &mdash; not a single model exceeds chance.</p>
+      </section>
+
+      <!-- 08 Architectural -->
+      <section class="sect accent-blue fade-in">
+        <div class="sect-head"><span class="sect-num">08</span><span class="sect-title">It's Architectural &mdash; Not Data, Not Prompting</span></div>
+        <ul class="tight">
+          <li><strong>Fine-tuning fails.</strong> InternVL2.5-8B &amp; Qwen2-VL-7B on 400 videos &times; 30 epochs &rarr; still 0%.</li>
+          <li><strong>VJEPA-2 &amp; DINOv3 can't even <em>overfit</em></strong> "is there content?" &mdash; loss saturates at chance.</li>
+          <li><strong>Explicit motion cues unlock it.</strong> Overlaying Farneback motion boundaries lifts Qwen2-VL-7B &rarr; <strong>51.5%</strong> and GPT-4o &rarr; <strong>59.1%</strong>.</li>
+        </ul>
+        <div class="callout">
+          <strong>Diagnosis:</strong> Today's VLMs lack a mechanism for <em>frame differencing / temporal integration</em>. The information is computationally extractable &mdash; it just never reaches the language model.
+        </div>
+      </section>
+
+      <!-- 10 What Unlocks It -->
+      <section class="sect fade-in">
+        <div class="sect-head"><span class="sect-num">09</span><span class="sect-title">What Unlocks It</span></div>
+        <p>Pre-compute motion boundaries with classical optical flow, <strong>overlay them on the noisy frames</strong>, and the same models suddenly score in the 50s.</p>
+        <div class="aug-chart">
+          <div class="aug-row">
+            <div class="aug-row-label">Qwen2-VL-7B</div>
+            <div class="aug-bars">
+              <div class="aug-bar-row">
+                <span class="aug-state">Frames only</span>
+                <div class="aug-bar-track"><div class="aug-bar-fill baseline" data-w="0.6"></div></div>
+                <span class="aug-num zero">0.0</span>
+              </div>
+              <div class="aug-bar-row">
+                <span class="aug-state">+ motion overlay</span>
+                <div class="aug-bar-track"><div class="aug-bar-fill augmented" data-w="51.5"></div></div>
+                <span class="aug-num">51.5</span>
+              </div>
+            </div>
+          </div>
+          <div class="aug-row">
+            <div class="aug-row-label">GPT-4o</div>
+            <div class="aug-bars">
+              <div class="aug-bar-row">
+                <span class="aug-state">Frames only</span>
+                <div class="aug-bar-track"><div class="aug-bar-fill baseline" data-w="0.6"></div></div>
+                <span class="aug-num zero">0.0</span>
+              </div>
+              <div class="aug-bar-row">
+                <span class="aug-state">+ motion overlay</span>
+                <div class="aug-bar-track"><div class="aug-bar-fill augmented" data-w="59.1"></div></div>
+                <span class="aug-num">59.1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="table-note">Confirms the failure is <em>architectural</em>: temporal info is computationally extractable but VLMs can't reach it without spatial hand-holding. Dynamic Scenes stay hard (&le;3.5%).</p>
+      </section>
+
+      <!-- 09 Take-Aways -->
+      <section class="sect takeaways fade-in">
+        <div class="sect-head"><span class="sect-num">10</span><span class="sect-title">Take-Aways</span></div>
+        <ul>
+          <li><strong>"Time-blindness"</strong> is a robust, architecture-level failure of every modern Video-VLM.</li>
+          <li>Future models need <strong>dedicated temporal pathways</strong> &mdash; distributed timing, motion-energy estimation, motion-based figure-ground.</li>
+          <li>SpookyBench + generator released to catalyze this direction.</li>
+        </ul>
+      </section>
+
+      <!-- Citation -->
+      <section class="sect fade-in citation">
+        <div class="sect-head"><span class="sect-num">&#10078;</span><span class="sect-title">Citation</span></div>
+        <div class="bibtex">@inproceedings{upadhyay2026timeblindness,
+  title     = {Time Blindness: Why Video-Language Models Can't See What Humans Can},
+  author    = {Upadhyay, Ujjwal and Ranjan, Mukul and Shen, Zhiqiang and Elhoseiny, Mohamed},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2026},
+  eprint    = {2505.24867},
+  archivePrefix = {arXiv}
+}</div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    Time Blindness <span class="dot"></span> CVPR 2026 <span class="dot"></span> KAUST &middot; MBZUAI &middot; DocPanel
+  </footer>
+
   <script>
-    // Theme toggle functionality
-    function toggleTheme() {
-      const body = document.body;
-      const themeIcon = document.getElementById('themeIcon');
-      const currentTheme = body.getAttribute('data-theme');
-      
-      if (currentTheme === 'light') {
-        body.removeAttribute('data-theme');
-        themeIcon.className = 'fas fa-sun';
-        localStorage.setItem('theme', 'dark');
-      } else {
-        body.setAttribute('data-theme', 'light');
-        themeIcon.className = 'fas fa-moon';
-        localStorage.setItem('theme', 'light');
-      }
-    }
-    
-    // Load saved theme
-    function loadTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      const body = document.body;
-      const themeIcon = document.getElementById('themeIcon');
-      
-      if (savedTheme === 'dark') {
-        body.removeAttribute('data-theme');
-        themeIcon.className = 'fas fa-sun';
-      } else {
-        // Default to light theme
-        body.setAttribute('data-theme', 'light');
-        themeIcon.className = 'fas fa-moon';
-      }
-    }
-    
-    // Initialize theme on page load
-    document.addEventListener('DOMContentLoaded', loadTheme);
-
-    // Add fade-in animation on scroll
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
+    // Fade-in on scroll
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
+          entry.target.classList.add('visible');
+          // Animate any bar fills inside this section
+          entry.target.querySelectorAll('.aug-bar-fill').forEach(bar => {
+            const w = bar.getAttribute('data-w');
+            if (w !== null) bar.style.width = w + '%';
+          });
+          observer.unobserve(entry.target);
         }
       });
-    }, observerOptions);
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
-    // Initially hide elements
-    document.querySelectorAll('.fade-in').forEach((el, index) => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-      el.style.transitionDelay = `${index * 0.1}s`;
-      observer.observe(el);
-    });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-    // Auto-play videos when they come into view
+    // Auto-play stimulus videos when in view, pause when out
     const videoObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        const video = entry.target;
-        if (entry.isIntersecting) {
-          video.play().catch(() => {
-            // Handle autoplay restrictions
-            console.log('Autoplay prevented for video');
-          });
-        } else {
-          video.pause();
-        }
+        const v = entry.target;
+        if (entry.isIntersecting) { v.play().catch(() => {}); }
+        else { v.pause(); }
       });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.4 });
 
-    document.querySelectorAll('video').forEach(video => {
-      videoObserver.observe(video);
-      
-      // Set video properties
-      video.muted = true;
-      video.loop = true;
-      video.setAttribute('playsinline', '');
+    document.querySelectorAll('video').forEach(v => {
+      v.muted = true; v.loop = true; v.setAttribute('playsinline', '');
+      videoObserver.observe(v);
     });
   </script>
 </body>
