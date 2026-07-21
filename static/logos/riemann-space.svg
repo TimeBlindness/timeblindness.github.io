@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="280" viewBox="38 14 360 70">
+  <g transform="translate(72, 50)">
+    <circle r="30" fill="none" stroke="#1a1a2e" stroke-width="2.5"/>
+    <ellipse rx="30" ry="9" fill="none" stroke="#1a1a2e" stroke-width="1.7"/>
+    <ellipse rx="9" ry="30" fill="none" stroke="#1a1a2e" stroke-width="1.7"/>
+    <circle cy="-30" r="3.5" fill="#1a1a2e"/>
+  </g>
+  <text x="117" y="60" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="400" font-size="24" letter-spacing="5" fill="#1a1a2e">RIEMANN SPACE</text>
+</svg>
